@@ -17,6 +17,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import com.example.insightnewsandroid.R;
 import com.example.insightnewsandroid.db.AppDatabase;
 import com.example.insightnewsandroid.db.DetectionRecordEntity;
+import com.example.insightnewsandroid.db.SuspiciousSpan;
 import com.example.insightnewsandroid.databinding.FragmentCredibilityBinding;
 
 import java.util.ArrayList;
@@ -30,7 +31,6 @@ public class CredibilityFragment extends Fragment {
     private CredibilityViewModel viewModel;
     private ChatAdapter adapter;
 
-    // Room 相关
     private AppDatabase db;
     private ExecutorService executor = Executors.newSingleThreadExecutor();
     private Handler mainHandler = new Handler(Looper.getMainLooper());
@@ -68,13 +68,16 @@ public class CredibilityFragment extends Fragment {
             if (!messages.isEmpty()) {
                 binding.chatRecyclerView.scrollToPosition(messages.size() - 1);
 
-                // 检查最后一条是否是 AI 回复（表示一次检测完成）
                 ChatMessage lastMessage = messages.get(messages.size() - 1);
                 if (lastMessage.getType() == ChatMessage.Type.AI) {
                     String title = getNewsTitle(messages);
+                    String fullText = getFullText(messages); // ✅ 提取全文
                     String report = buildFullReport(lastMessage);
                     String credibility = extractCredibilityFromResult(lastMessage);
-                    saveDetectionRecord(title, report, credibility);
+                    List<SuspiciousSpan> spans = extractSuspiciousSpans(lastMessage, fullText); // ✅ 提取可疑片段
+
+                    // ✅ 传入所有必要参数
+                    saveDetectionRecord(title, fullText, report, credibility, spans);
                 }
             }
         });
@@ -90,6 +93,39 @@ public class CredibilityFragment extends Fragment {
             }
         }
         return "未命名新闻";
+    }
+
+    private String getFullText(List<ChatMessage> messages) {
+        for (ChatMessage msg : messages) {
+            if (msg.getType() == ChatMessage.Type.USER) {
+                return msg.getText() != null ? msg.getText() : "";
+            }
+        }
+        return "";
+    }
+
+    private List<SuspiciousSpan> extractSuspiciousSpans(ChatMessage aiMessage, String fullText) {
+        // TODO: 从 AI 分析结果中提取可疑片段
+        // 示例：假设 AI 返回了关键词或位置信息
+        List<SuspiciousSpan> spans = new ArrayList<>();
+
+        // 临时模拟：将全文中包含“震惊”、“速看”的片段标记为可疑
+        String[] keywords = {"震惊", "速看", "刚刚", "重磅"};
+        for (String keyword : keywords) {
+            int index = fullText.indexOf(keyword);
+            if (index != -1) {
+                SuspiciousSpan span = new SuspiciousSpan();
+                span.text = keyword;
+                span.start = index;
+                span.end = index + keyword.length();
+                span.credibilityScore = 40; // 低可信度
+                span.analysis = "包含夸张用语";
+                span.evidence = "新闻标题常用夸张词汇吸引点击";
+                spans.add(span);
+            }
+        }
+
+        return spans;
     }
 
     private String buildFullReport(ChatMessage aiMessage) {
@@ -111,7 +147,7 @@ public class CredibilityFragment extends Fragment {
     private String extractCredibilityFromResult(ChatMessage aiMessage) {
         CredibilityResult result = aiMessage.getResult();
         if (result == null) {
-            return "较高"; // 默认
+            return "较高";
         }
         int score = result.getScore();
         if (score >= 80) {
@@ -123,13 +159,17 @@ public class CredibilityFragment extends Fragment {
         }
     }
 
-    private void saveDetectionRecord(String title, String report, String credibility) {
+    // ✅ 修正：接收 fullText 和 spans
+    private void saveDetectionRecord(String title, String fullText, String report,
+                                     String credibility, List<SuspiciousSpan> spans) {
         executor.execute(() -> {
             DetectionRecordEntity record = new DetectionRecordEntity(
                     title,
                     System.currentTimeMillis(),
+                    fullText,           // ✅ 新闻全文
+                    report,             // AI 报告
                     credibility,
-                    report
+                    spans               // ✅ 可疑片段
             );
             db.detectionDao().insert(record);
             mainHandler.post(() -> {

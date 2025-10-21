@@ -3,7 +3,10 @@ package com.example.insightnewsandroid.db;
 
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
-import androidx.room.Ignore; // 👈 新增
+import androidx.room.Ignore;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import java.util.List; // ✅ 关键：导入 List
 
 @Entity(tableName = "detection_records")
 public class DetectionRecordEntity {
@@ -12,18 +15,22 @@ public class DetectionRecordEntity {
 
     public String title;
     public long detectionDate;
+    public String fullText;              // 新闻全文
+    public String fullReport;            // AI 分析报告
     public String credibilityLevel;
-    public String fullReport;
+    public String suspiciousSpansJson;   // 可疑片段 JSON
 
-    // 无参构造函数（Room 必须）
     public DetectionRecordEntity() {}
 
-    // 有参构造函数 —— 加上 @Ignore
     @Ignore
-    public DetectionRecordEntity(String title, long detectionDate, String credibilityLevel, String fullReport) {
+    public DetectionRecordEntity(String title, long detectionDate, String fullText,
+                                 String fullReport, String credibilityLevel,
+                                 List<SuspiciousSpan> spans) {
         this.title = title;
         this.detectionDate = detectionDate;
-        this.credibilityLevel = credibilityLevel;
+        this.fullText = fullText;
         this.fullReport = fullReport;
+        this.credibilityLevel = credibilityLevel;
+        this.suspiciousSpansJson = new Gson().toJson(spans);
     }
 }

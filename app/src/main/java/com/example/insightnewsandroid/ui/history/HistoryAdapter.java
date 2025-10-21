@@ -1,6 +1,8 @@
 // HistoryAdapter.java
 package com.example.insightnewsandroid.ui.history;
 
+import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -9,6 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
+import com.example.insightnewsandroid.EnhancedReportActivity;
 import com.example.insightnewsandroid.R;
 import com.example.insightnewsandroid.db.DetectionRecordEntity;
 import java.text.SimpleDateFormat;
@@ -17,15 +20,11 @@ import java.util.Locale;
 
 public class HistoryAdapter extends ListAdapter<DetectionRecordEntity, HistoryAdapter.ViewHolder> {
 
-    public interface OnItemClickListener {
-        void onItemClick(DetectionRecordEntity record);
-    }
+    private final Context context;
 
-    private final OnItemClickListener listener;
-
-    public HistoryAdapter(OnItemClickListener listener) {
+    public HistoryAdapter(Context context) {
         super(DIFF_CALLBACK);
-        this.listener = listener;
+        this.context = context;
     }
 
     @NonNull
@@ -38,49 +37,53 @@ public class HistoryAdapter extends ListAdapter<DetectionRecordEntity, HistoryAd
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        DetectionRecordEntity record = getItem(position);
-        holder.bind(record, listener);
+        holder.bind(getItem(position));
     }
 
-    static class ViewHolder extends RecyclerView.ViewHolder {
+    class ViewHolder extends RecyclerView.ViewHolder {
         private final TextView titleText;
         private final TextView dateText;
         private final TextView credibilityTag;
 
-        public ViewHolder(@NonNull View itemView) {
+        ViewHolder(@NonNull View itemView) {
             super(itemView);
             titleText = itemView.findViewById(R.id.titleText);
             dateText = itemView.findViewById(R.id.dateText);
             credibilityTag = itemView.findViewById(R.id.credibilityTag);
         }
 
-        public void bind(DetectionRecordEntity record, OnItemClickListener listener) {
+        void bind(DetectionRecordEntity record) {
             titleText.setText(record.title);
-
-            String dateStr = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
-                    .format(new Date(record.detectionDate));
-            dateText.setText(dateStr);
-
+            dateText.setText(new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
+                    .format(new Date(record.detectionDate)));
             credibilityTag.setText(record.credibilityLevel);
 
-            // 根据可信度设置背景
-            int backgroundRes;
+            // ✅ Java 11 兼容的 switch 语句
+            int bg;
             switch (record.credibilityLevel) {
                 case "高":
-                    backgroundRes = R.drawable.bg_credibility_high;
+                    bg = R.drawable.bg_credibility_high;
                     break;
                 case "较高":
-                    backgroundRes = R.drawable.bg_credibility_medium;
+                    bg = R.drawable.bg_credibility_medium;
                     break;
                 case "低":
-                    backgroundRes = R.drawable.bg_credibility_low;
+                    bg = R.drawable.bg_credibility_low;
                     break;
                 default:
-                    backgroundRes = R.drawable.bg_credibility_medium;
+                    bg = R.drawable.bg_credibility_medium;
+                    break;
             }
-            credibilityTag.setBackgroundResource(backgroundRes);
+            credibilityTag.setBackgroundResource(bg);
 
-            itemView.setOnClickListener(v -> listener.onItemClick(record));
+            itemView.setOnClickListener(v -> {
+                Intent intent = new Intent(context, EnhancedReportActivity.class);
+                intent.putExtra("title", record.title);
+                intent.putExtra("fullText", record.fullText);
+                intent.putExtra("suspiciousSpans", record.suspiciousSpansJson);
+                intent.putExtra("credibilityLevel", record.credibilityLevel);
+                context.startActivity(intent);
+            });
         }
     }
 

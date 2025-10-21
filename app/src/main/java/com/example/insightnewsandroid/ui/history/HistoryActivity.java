@@ -1,7 +1,6 @@
 // HistoryActivity.java
 package com.example.insightnewsandroid;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -42,7 +41,7 @@ public class HistoryActivity extends AppCompatActivity {
         recyclerView = findViewById(R.id.recyclerView);
 
         db = AppDatabase.getDatabase(this);
-        setupRecyclerView();
+        setupRecyclerView(); // ✅ 关键：传 this
         loadAllRecords();
 
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
@@ -65,14 +64,7 @@ public class HistoryActivity extends AppCompatActivity {
     }
 
     private void setupRecyclerView() {
-        adapter = new HistoryAdapter(record -> {
-            Intent intent = new Intent(HistoryActivity.this, ReportDetailActivity.class);
-            intent.putExtra("title", record.title);
-            intent.putExtra("date", record.detectionDate);
-            intent.putExtra("credibility", record.credibilityLevel);
-            intent.putExtra("report", record.fullReport);
-            startActivity(intent);
-        });
+        adapter = new HistoryAdapter(this); // ✅ 传入 Context (this)
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(adapter);
     }

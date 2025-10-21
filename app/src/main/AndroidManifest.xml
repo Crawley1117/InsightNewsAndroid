@@ -35,6 +35,10 @@
             android:exported="false"
             android:theme="@style/Theme.InsightNewsAndroid.NoActionBar" />
 
+        <activity
+            android:name=".EnhancedReportActivity"
+            android:exported="false"
+            android:theme="@style/Theme.InsightNewsAndroid.NoActionBar" />
     </application>
 
 </manifest>
