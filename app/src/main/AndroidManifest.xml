@@ -12,9 +12,8 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.InsightNewsAndroid">
 
-        <!-- 主 Activity（启动页） -->
         <activity
-            android:name=".MainActivity"
+            android:name=".auth.WelcomeActivity"
             android:exported="true"
             android:label="@string/app_name">
             <intent-filter>
@@ -22,7 +21,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
+        <!-- MainActivity -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="false"
+            android:theme="@style/Theme.InsightNewsAndroid.NoActionBar" />
         <!-- HistoryActivity -->
         <activity
             android:name=".HistoryActivity"
@@ -34,6 +37,15 @@
             android:name=".ReportDetailActivity"
             android:exported="false"
             android:theme="@style/Theme.InsightNewsAndroid.NoActionBar" />
+        <!-- 登录页 -->
+        <activity
+            android:name=".auth.LoginActivity"
+            android:exported="false" />
+
+        <!-- 注册页 -->
+        <activity
+            android:name=".auth.RegisterActivity"
+            android:exported="false" />
 
         <activity
             android:name=".EnhancedReportActivity"
