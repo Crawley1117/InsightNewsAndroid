@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">InsightNewsAndroid</string>
+    <string name="title_home">Home</string>
+    <string name="title_dashboard">Dashboard</string>
+    <string name="title_notifications">Notifications</string>
+    <string name="record_saved">已保存到历史记录</string>
+</resources>
