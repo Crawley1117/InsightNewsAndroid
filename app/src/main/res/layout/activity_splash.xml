@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_loading"> <!-- 使用你的背景图 -->
+
+    <!-- 可选：如果你想在图片上叠加文字或 Logo，可以在这里添加 TextView 或 ImageView -->
+    <!-- 例如：
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="冰小鉴"
+        android:textSize="36sp"
+        android:textColor="#FFFFFF"
+        android:layout_gravity="center" />
+    -->
+
+</FrameLayout>

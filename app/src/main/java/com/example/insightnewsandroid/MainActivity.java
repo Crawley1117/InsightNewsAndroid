@@ -1,9 +1,9 @@
-
+// MainActivity.java (移除登录检查后的版本)
 package com.example.insightnewsandroid;
 
 import android.content.Intent;
-import com.example.insightnewsandroid.auth.AuthRepository;
-import com.example.insightnewsandroid.auth.WelcomeActivity;
+// import com.example.insightnewsandroid.auth.AuthRepository; // 不再需要导入 AuthRepository
+// import com.example.insightnewsandroid.auth.WelcomeActivity; // 不再需要导入 WelcomeActivity
 
 import android.os.Bundle;
 import android.view.MenuItem;
@@ -28,16 +28,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        AuthRepository authRepo = new AuthRepository(this);
-        if (!authRepo.isLoggedIn()) {
-            startActivity(new Intent(this, WelcomeActivity.class));
-            finish();
-            return;
-        }
-
+        // 移除了登录检查逻辑，直接设置布局
         setContentView(R.layout.activity_main);
-
 
         // 初始化 Fragment
         homeFragment = new HomeFragment();

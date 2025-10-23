@@ -4,57 +4,53 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="24dp">
-
-    <ImageView
-        android:id="@+id/ivMascot"
-        android:layout_width="180dp"
-        android:layout_height="180dp"
-        android:src="@drawable/ic_mascot_bingxj"
-        android:contentDescription="冰小鉴"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintVertical_chainStyle="packed" />
+    android:background="@drawable/bg_home">
 
     <TextView
-        android:id="@+id/tvWelcome"
+        android:id="@+id/tvIntro"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="你好！我是冰小鉴\n帮你识别信息真伪"
-        android:textSize="20sp"
-        android:textAlignment="center"
-        android:textColor="?android:attr/textColorPrimary"
-        app:layout_constraintTop_toBottomOf="@id/ivMascot"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        android:text="你好，求是的冰小鉴\n我可以为你检测新闻\n请把你要检测的信息发给我吧"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="#000000"
+        android:layout_marginTop="24dp"
+        android:layout_marginStart="24dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
+    <!-- “开始新检测”按钮 -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnNewDetection"
+        style="@style/Widget.Material3.Button.TextButton"
         android:layout_width="0dp"
         android:layout_height="60dp"
-        android:layout_marginTop="48dp"
         android:text="开始新检测"
         android:textSize="16sp"
-        app:cornerRadius="16dp"
-        app:layout_constraintTop_toBottomOf="@id/tvWelcome"
+        android:background="@android:color/transparent"
+        android:textColor="#000000"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintWidth_percent="0.8" />
+        app:layout_constraintVertical_bias="0.46"
+        app:layout_constraintWidth_percent="0.4" />
 
+    <!-- “查看历史检测”按钮 -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnViewHistory"
-        style="@style/Widget.Material3.Button.OutlinedButton"
+        style="@style/Widget.Material3.Button.TextButton"
         android:layout_width="0dp"
         android:layout_height="60dp"
-        android:layout_marginTop="16dp"
         android:text="查看历史检测"
         android:textSize="16sp"
-        app:cornerRadius="16dp"
-        app:layout_constraintTop_toBottomOf="@id/btnNewDetection"
+        android:background="@android:color/transparent"
+        android:textColor="#000000"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintWidth_percent="0.8" />
+        app:layout_constraintVertical_bias="0.67"
+        app:layout_constraintWidth_percent="0.4" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

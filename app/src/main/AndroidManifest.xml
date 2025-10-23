@@ -12,20 +12,31 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.InsightNewsAndroid">
 
+        <!-- 新增：SplashActivity 作为启动页 -->
         <activity
-            android:name=".auth.WelcomeActivity"
+            android:name=".SplashActivity"
             android:exported="true"
-            android:label="@string/app_name">
+            android:theme="@style/Theme.InsightNewsAndroid">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- WelcomeActivity：不再作为启动页，移除 intent-filter -->
+        <activity
+            android:name=".auth.WelcomeActivity"
+            android:exported="false"
+            android:label="@string/app_name">
+            <!-- 注意：这里没有 intent-filter -->
+        </activity>
+
         <!-- MainActivity -->
         <activity
             android:name=".MainActivity"
             android:exported="false"
             android:theme="@style/Theme.InsightNewsAndroid.NoActionBar" />
+
         <!-- HistoryActivity -->
         <activity
             android:name=".HistoryActivity"
@@ -37,6 +48,7 @@
             android:name=".ReportDetailActivity"
             android:exported="false"
             android:theme="@style/Theme.InsightNewsAndroid.NoActionBar" />
+
         <!-- 登录页 -->
         <activity
             android:name=".auth.LoginActivity"

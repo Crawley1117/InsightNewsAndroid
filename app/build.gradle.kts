@@ -1,5 +1,8 @@
+// app/build.gradle.kts
 plugins {
-    alias(libs.plugins.android.application)
+    alias(libs.plugins.android.application) // 使用 alias 引用 Android 插件
+    alias(libs.plugins.jetbrains.kotlin.android) // 使用 alias 引用 Kotlin 插件，注意别名是 jetbrains-kotlin-android
+    // ...
 }
 
 android {
@@ -28,6 +31,9 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
+    }
+    kotlinOptions {
+        jvmTarget = "11"
     }
     buildFeatures {
         viewBinding = true
