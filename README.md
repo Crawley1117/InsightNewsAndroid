@@ -8,3 +8,8 @@ version 0.1.3 add history finding function
 ### version0.1.4 ###
 
 add login and logout function and do some makeup to xml.
+
+
+bug waiting to repair:
+
+break down sometimes when launching with unknown reasons.
