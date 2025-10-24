@@ -3,60 +3,65 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:padding="8dp">
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/chatRecyclerView"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:padding="8dp"
-        android:clipToPadding="false"
+        android:layout_marginBottom="8dp"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/inputLayout"
+        app:layout_constraintBottom_toTopOf="@id/inputContainer"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
     <LinearLayout
-        android:id="@+id/inputLayout"
+        android:id="@+id/inputContainer"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
+        android:background="?attr/colorSurface"
         android:padding="8dp"
-        android:background="?android:attr/colorBackground"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/plusButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            style="@style/Widget.Material3.Button.IconButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:layout_gravity="center_vertical"
             android:layout_marginEnd="8dp"
-            app:srcCompat="@drawable/ic_add"
-            app:tint="@android:color/white"
-            style="@style/Widget.Material3.FloatingActionButton.Secondary" />
+            app:icon="@drawable/ic_add_vector"
+            app:iconSize="24dp" />
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/editText"
+        <com.google.android.material.textfield.TextInputLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:hint="粘贴文本、链接，或点击 + 上传文件"
-            android:inputType="textMultiLine"
-            android:maxLines="3"
-            android:padding="12dp"
-            android:background="@drawable/bg_input_field"
-            android:imeOptions="actionSend" />
+            android:layout_gravity="center_vertical"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/editText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="粘贴文本、链接，或点击 + 上传文件"
+                android:inputType="textMultiLine"
+                android:maxLines="3" />
+        </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/sendButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom"
+            style="@style/Widget.Material3.Button.IconButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_gravity="center_vertical"
             android:layout_marginStart="8dp"
-            app:icon="@drawable/ic_send"
-            style="@style/Widget.Material3.Button.IconButton" />
+            app:icon="@drawable/ic_send_vector"
+            app:iconSize="24dp" />
 
     </LinearLayout>
 

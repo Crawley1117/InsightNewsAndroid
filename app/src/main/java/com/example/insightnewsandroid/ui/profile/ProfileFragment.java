@@ -1,4 +1,4 @@
-// ProfileFragment.java
+// ProfileFragment.java (移除 getActivity().finish() 后的版本)
 package com.example.insightnewsandroid.ui.profile;
 
 import com.example.insightnewsandroid.R;
@@ -55,12 +55,14 @@ public class ProfileFragment extends Fragment {
 
         // 创建 Intent 跳转到 WelcomeActivity
         Intent intent = new Intent(requireContext(), WelcomeActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK); // 清除任务栈
+        // 添加 FLAG 清除任务栈，并启动新的任务
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intent);
 
-        // 结束 MainActivity，确保用户无法返回到已登出的主界面
-        if (getActivity() != null) {
-            getActivity().finish();
-        }
+        // 移除这行代码，不再手动 finish MainActivity
+        // if (getActivity() != null) {
+        //     getActivity().finish();
+        // }
+        // 现在依靠 FLAG_ACTIVITY_CLEAR_TOP 和 FLAG_ACTIVITY_NEW_TASK 来管理 Activity 栈
     }
 }
