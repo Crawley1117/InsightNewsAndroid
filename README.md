@@ -5,9 +5,13 @@ version 0.1.2 add disceptfunction
 
 version 0.1.3 add history finding function
 
-### version0.1.4 ###
+## version0.1.4 ##
 
-add login and logout function and do some makeup to xml.
+新增登入登出。do some makeup to xml.
+
+### version 0.1.4.1 ###
+修正了对话页面的图标显示错误。
+修复了一些恶性错误。
 
 
 bug waiting to repair:
