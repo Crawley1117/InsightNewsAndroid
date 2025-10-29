@@ -1,4 +1,5 @@
-<img width="818" height="122" alt="image" src="https://github.com/user-attachments/assets/a3b69ed8-d178-4ac9-8fd1-2031a8670c60" /># InsightNews for Android #
+<img width="818" height="122" alt="image" src="https://github.com/user-attachments/assets/a3b69ed8-d178-4ac9-8fd1-2031a8670c60" />
+# InsightNews for Android #
 version 0.1:构建了主要界面和事件。
 
 version 0.1.2:新增了分析UI。
