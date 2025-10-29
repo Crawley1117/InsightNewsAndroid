@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="126dp"
+    android:layout_marginBottom="16dp"
+    app:cardCornerRadius="10dp"
+    app:cardBackgroundColor="@color/topic_card_bg"
+    app:cardElevation="2dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal"
+        android:padding="16dp">
+
+        <!-- #标签 -->
+        <FrameLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="12dp">
+
+            <TextView
+                android:id="@+id/tvHashTag"
+                android:layout_width="21dp"
+                android:layout_height="21dp"
+                android:text="#"
+                android:textColor="@color/white"
+                android:textSize="12sp"
+                android:gravity="center"
+                android:background="@drawable/circle_red_bg" />
+
+        </FrameLayout>
+
+        <!-- 内容区域 -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <!-- 标题 -->
+            <TextView
+                android:id="@+id/tvTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="话题标题"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:maxLines="1"
+                android:ellipsize="end" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="10dp">
+
+                <!-- 文字内容区域 -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:layout_marginEnd="20dp">
+
+                    <!-- 内容描述 -->
+                    <TextView
+                        android:id="@+id/tvContent"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="话题内容描述"
+                        android:textSize="12sp"
+                        android:alpha="0.75"
+                        android:maxLines="2"
+                        android:ellipsize="end" />
+
+                    <!-- 标签和关注数 -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginTop="10dp">
+
+                        <!-- 分类标签 -->
+                        <TextView
+                            android:id="@+id/tvCategory"
+                            android:layout_width="wrap_content"
+                            android:layout_height="13dp"
+                            android:text="分类"
+                            android:textSize="10sp"
+                            android:alpha="0.5"
+                            android:gravity="center"
+                            android:background="@drawable/rounded_white_bg"
+                            android:paddingHorizontal="8dp"
+                            android:layout_marginEnd="7dp" />
+
+                        <!-- 火焰图标 -->
+                        <ImageView
+                            android:layout_width="12dp"
+                            android:layout_height="12dp"
+                            android:src="@drawable/ic_thumb_up"
+                            android:layout_marginEnd="8dp" />
+
+                        <!-- 关注人数 -->
+                        <TextView
+                            android:id="@+id/tvFollows"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="0人关注"
+                            android:textSize="10sp"
+                            android:alpha="0.5" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <!-- 话题图片 - 简化版本 -->
+                <ImageView
+                    android:id="@+id/ivThumb"
+                    android:layout_width="88dp"
+                    android:layout_height="64dp"
+                    android:scaleType="centerCrop"
+                    android:background="@color/gray_light"
+                    android:contentDescription="话题图片" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>

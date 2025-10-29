@@ -1,0 +1,302 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/background_gradient"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- 顶部标题栏 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingStart="30dp"
+            android:paddingEnd="36dp"
+            android:paddingTop="75dp"
+            android:paddingBottom="35dp"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/tvTitle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="探究真相"
+                android:textSize="28sp"
+                android:textStyle="bold"
+                android:textColor="@color/black" />
+
+            <ImageView
+                android:id="@+id/ivCollect"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_heart"
+                android:layout_marginEnd="15dp"
+                android:contentDescription="收藏"
+                android:clickable="true"
+                android:focusable="true" />
+
+            <ImageView
+                android:id="@+id/ivSearch"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_search"
+                android:contentDescription="搜索"
+                android:clickable="true"
+                android:focusable="true" />
+
+        </LinearLayout>
+
+        <!-- 真相侦探区域 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingBottom="30dp">
+
+            <!-- 标题 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingStart="20dp"
+                android:paddingBottom="20dp">
+
+                <View
+                    android:layout_width="8dp"
+                    android:layout_height="23dp"
+                    android:background="@drawable/rounded_blue_rectangle"
+                    android:layout_marginEnd="8dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="真相侦探"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/black" />
+
+            </LinearLayout>
+
+            <!-- 水平滚动图片 -->
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingStart="24dp"
+                android:scrollbars="none">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:paddingEnd="24dp">
+
+                    <ImageView
+                        android:id="@+id/ivBingjian"
+                        android:layout_width="146dp"
+                        android:layout_height="198dp"
+                        android:src="@drawable/bingjian"
+                        android:scaleType="centerCrop"
+                        android:background="@drawable/rounded_corner_18"
+                        android:layout_marginEnd="10dp"
+                        android:contentDescription="冰鉴"
+                        android:clickable="true"
+                        android:focusable="true" />
+
+                    <ImageView
+                        android:id="@+id/ivLingxin"
+                        android:layout_width="146dp"
+                        android:layout_height="198dp"
+                        android:src="@drawable/linxin"
+                        android:scaleType="centerCrop"
+                        android:background="@drawable/rounded_corner_18"
+                        android:layout_marginEnd="10dp"
+                        android:contentDescription="灵心"
+                        android:clickable="true"
+                        android:focusable="true" />
+
+                    <ImageView
+                        android:id="@+id/ivNuanyang"
+                        android:layout_width="146dp"
+                        android:layout_height="198dp"
+                        android:src="@drawable/nuanyang"
+                        android:scaleType="centerCrop"
+                        android:background="@drawable/rounded_corner_18"
+                        android:contentDescription="暖阳"
+                        android:clickable="true"
+                        android:focusable="true" />
+
+                </LinearLayout>
+
+            </HorizontalScrollView>
+
+        </LinearLayout>
+
+        <!-- 热点话题区域 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- 分类标题栏 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingStart="20dp"
+                android:paddingBottom="20dp">
+
+                <View
+                    android:layout_width="8dp"
+                    android:layout_height="23dp"
+                    android:background="@drawable/rounded_blue_rectangle"
+                    android:layout_marginEnd="8dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="热点话题"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/black"
+                    android:layout_marginEnd="25dp" />
+
+                <!-- 分类标签容器 -->
+                <HorizontalScrollView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:scrollbars="none">
+
+                    <RelativeLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:paddingEnd="20dp">
+
+                        <LinearLayout
+                            android:id="@+id/categoryContainer"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:id="@+id/tvAll"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="全部"
+                                android:textSize="16sp"
+                                android:textColor="@color/category_selected"
+                                android:padding="8dp"
+                                android:clickable="true"
+                                android:focusable="true" />
+
+                            <TextView
+                                android:id="@+id/tvPolitics"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="政治"
+                                android:textSize="14sp"
+                                android:textColor="@color/black"
+                                android:alpha="0.75"
+                                android:padding="8dp"
+                                android:clickable="true"
+                                android:focusable="true" />
+
+                            <TextView
+                                android:id="@+id/tvSociety"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="社会"
+                                android:textSize="14sp"
+                                android:textColor="@color/black"
+                                android:alpha="0.75"
+                                android:padding="8dp"
+                                android:clickable="true"
+                                android:focusable="true" />
+
+                            <TextView
+                                android:id="@+id/tvTech"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="科技"
+                                android:textSize="14sp"
+                                android:textColor="@color/black"
+                                android:alpha="0.75"
+                                android:padding="8dp"
+                                android:clickable="true"
+                                android:focusable="true" />
+
+                            <TextView
+                                android:id="@+id/tvCulture"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="文化"
+                                android:textSize="14sp"
+                                android:textColor="@color/black"
+                                android:alpha="0.75"
+                                android:padding="8dp"
+                                android:clickable="true"
+                                android:focusable="true" />
+
+                            <TextView
+                                android:id="@+id/tvEconomy"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="经济"
+                                android:textSize="14sp"
+                                android:textColor="@color/black"
+                                android:alpha="0.75"
+                                android:padding="8dp"
+                                android:clickable="true"
+                                android:focusable="true" />
+
+                        </LinearLayout>
+
+                        <!-- 底部指示器 -->
+                        <View
+                            android:id="@+id/indicator"
+                            android:layout_width="16dp"
+                            android:layout_height="2dp"
+                            android:background="@color/category_indicator"
+                            android:layout_below="@id/categoryContainer"
+                            android:layout_marginStart="7dp"
+                            android:translationX="7dp" />
+
+                    </RelativeLayout>
+
+                </HorizontalScrollView>
+
+            </LinearLayout>
+
+            <!-- 加载进度条 -->
+            <ProgressBar
+                android:id="@+id/progressBar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="20dp"
+                android:visibility="gone" />
+
+            <!-- 话题列表 -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvTopics"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingStart="20dp"
+                android:paddingEnd="15dp"
+                android:paddingBottom="80dp" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</ScrollView>
