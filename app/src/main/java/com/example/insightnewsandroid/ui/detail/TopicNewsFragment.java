@@ -1,5 +1,6 @@
 package com.example.insightnewsandroid.ui.detail;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -14,6 +15,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.insightnewsandroid.databinding.FragmentTopicNewsBinding;
 import com.example.insightnewsandroid.data.model.NewsItem;
+import com.example.insightnewsandroid.EnhancedReportActivity; // 添加导入
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,7 +52,6 @@ public class TopicNewsFragment extends Fragment {
 
         if (getArguments() != null) {
             topicId = getArguments().getInt("TOPIC_ID");
-            // token 不再存储为字段，因为未被使用
         }
 
         initView();
@@ -63,11 +64,34 @@ public class TopicNewsFragment extends Fragment {
         binding.recyclerViewNews.setLayoutManager(new LinearLayoutManager(getContext()));
         binding.recyclerViewNews.setAdapter(newsAdapter);
 
-        // 设置新闻点击监听
-        newsAdapter.setOnNewsClickListener(newsItem ->
-                // 处理新闻点击事件
-                Log.d("TopicNewsFragment", "新闻被点击: " + newsItem.getTitle())
-        );
+        // 设置新闻点击监听 - 跳转到详细报告分析页
+        newsAdapter.setOnNewsClickListener(newsItem -> {
+            Log.d("TopicNewsFragment", "新闻被点击: " + newsItem.getTitle());
+
+            // 跳转到详细报告分析页
+            Intent intent = new Intent(getActivity(), EnhancedReportActivity.class);
+
+            // 传递新闻数据
+            intent.putExtra("title", newsItem.getTitle());
+
+            // 传递新闻内容
+            if (newsItem.getContent() != null && !newsItem.getContent().isEmpty()) {
+                intent.putExtra("fullText", newsItem.getContent());
+            } else {
+                // 如果没有内容，使用标题和一些占位文本
+                String placeholderContent = newsItem.getTitle() + "\n\n" +
+                        "这是关于 \"" + newsItem.getTitle() + "\" 的详细新闻报道内容。\n\n" +
+                        "在这里可以看到新闻的完整分析报告，包括可信度评估、关键信息提取和相关背景分析。";
+                intent.putExtra("fullText", placeholderContent);
+            }
+
+            // 如果有图片URL，也传递过去（可选）
+            if (newsItem.getImageUrl() != null && !newsItem.getImageUrl().isEmpty()) {
+                intent.putExtra("imageUrl", newsItem.getImageUrl());
+            }
+
+            startActivity(intent);
+        });
 
         binding.swipeRefresh.setOnRefreshListener(this::loadNews);
     }
