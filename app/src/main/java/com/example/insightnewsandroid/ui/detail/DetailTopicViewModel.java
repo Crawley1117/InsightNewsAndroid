@@ -96,7 +96,21 @@ public class DetailTopicViewModel extends ViewModel {
 
         if (appContext != null) {
             List<NewsItem> relatedNewsList = TopicManager.getInstance(appContext).getRelatedNewsForTopic(topicId);
-            if (relatedNewsList != null && !relatedNewsList.isEmpty()) {
+
+            // 确保每条新闻都有内容
+            if (relatedNewsList != null) {
+                for (NewsItem news : relatedNewsList) {
+                    if (news.getContent() == null || news.getContent().isEmpty()) {
+                        // 如果没有内容，设置一些示例内容
+                        String sampleContent = "这是关于 \"" + news.getTitle() + "\" 的详细新闻报道。\n\n" +
+                                "在这里可以看到新闻的完整分析报告，包括可信度评估、关键信息提取和相关背景分析。\n\n" +
+                                "新闻发布时间：" + news.getDate() + "\n" +
+                                "浏览次数：" + news.getViewCount() + "次\n" +
+                                "点赞数：" + news.getLikeCount() + "次";
+                        news.setContent(sampleContent);
+                    }
+                }
+
                 Log.d(TAG, "找到相关新闻: " + relatedNewsList.size() + " 条");
                 relatedNews.setValue(relatedNewsList);
             } else {
