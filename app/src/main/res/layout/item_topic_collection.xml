@@ -4,7 +4,7 @@
     android:layout_height="wrap_content"
     android:orientation="horizontal"
     android:padding="16dp"
-    android:background="@drawable/item_background"
+    android:background="@color/background_light"
     android:layout_margin="8dp">
 
     <ImageView
@@ -12,20 +12,22 @@
         android:layout_width="80dp"
         android:layout_height="80dp"
         android:scaleType="centerCrop"
-        android:src="@drawable/save_failed" />
+        android:src="@color/gray"
+        android:contentDescription="@string/topic_thumbnail_desc" />
 
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:orientation="vertical"
-        android:paddingStart="12dp">
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp">
 
         <TextView
             android:id="@+id/tv_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="话题标题"
+            android:text="@string/topic_title_default"
             android:textSize="16sp"
             android:textStyle="bold"
             android:maxLines="1"
@@ -35,7 +37,7 @@
             android:id="@+id/tv_content"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="话题内容描述"
+            android:text="@string/topic_content_default"
             android:textSize="14sp"
             android:textColor="#666666"
             android:maxLines="2"
@@ -52,7 +54,7 @@
                 android:id="@+id/tv_topic_tag"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="分类"
+                android:text="@string/category_default"
                 android:textSize="12sp"
                 android:paddingHorizontal="8dp"
                 android:paddingVertical="4dp"
@@ -63,7 +65,7 @@
                 android:id="@+id/tv_follow_count"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="0人关注"
+                android:text="@string/follower_count_default"
                 android:textSize="12sp"
                 android:textColor="#999999"
                 android:layout_marginStart="8dp" />
