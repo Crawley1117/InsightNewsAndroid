@@ -125,4 +125,11 @@
     <color name="tech_bg">#FF7B1FA2</color>
     <color name="sports_bg">#FFFFA000</color>
     <color name="entertainment_bg">#FFC2185B</color>
+
+    <color name="icon_tint">#777777</color>
+    <color name="background_color">#F5F7FA</color>
+    <color name="assessment_background">#B2F0FF</color>
+    <color name="assessment_high">#C8E6C9</color>
+    <color name="assessment_medium">#FFE0B2</color>
+    <color name="assessment_low">#FFCDD2</color>
 </resources>

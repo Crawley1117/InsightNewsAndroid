@@ -7,4 +7,8 @@
     <string name="follow_count_format">%d 人关注</string>
     <string name="search_result_format">找到 %d 个结果</string>
     <string name="no_search_result_format">没有找到包含\"%s\"的结果</string>
+    <string name="clock">Clock</string>
+    <string name="like">Like</string>
+    <string name="dislike">Dislike</string>
+    <string name="star">Star</string>
 </resources>
