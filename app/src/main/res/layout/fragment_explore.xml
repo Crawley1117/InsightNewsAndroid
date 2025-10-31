@@ -16,8 +16,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:paddingStart="30dp"
-            android:paddingEnd="36dp"
+            android:paddingHorizontal="30dp"
             android:paddingTop="75dp"
             android:paddingBottom="35dp"
             android:gravity="center_vertical">
@@ -27,7 +26,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="探究真相"
+                android:text="@string/explore_title"
                 android:textSize="28sp"
                 android:textStyle="bold"
                 android:textColor="@color/black" />
@@ -38,7 +37,7 @@
                 android:layout_height="24dp"
                 android:src="@drawable/ic_heart"
                 android:layout_marginEnd="15dp"
-                android:contentDescription="收藏"
+                android:contentDescription="@string/collect_description"
                 android:clickable="true"
                 android:focusable="true" />
 
@@ -47,7 +46,7 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:src="@drawable/ic_search"
-                android:contentDescription="搜索"
+                android:contentDescription="@string/search_description"
                 android:clickable="true"
                 android:focusable="true" />
 
@@ -66,7 +65,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
-                android:paddingStart="20dp"
+                android:paddingHorizontal="20dp"
                 android:paddingBottom="20dp">
 
                 <View
@@ -78,7 +77,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="真相侦探"
+                    android:text="@string/truth_detective"
                     android:textSize="20sp"
                     android:textStyle="bold"
                     android:textColor="@color/black" />
@@ -89,7 +88,7 @@
             <HorizontalScrollView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:paddingStart="24dp"
+                android:paddingHorizontal="24dp"
                 android:scrollbars="none">
 
                 <LinearLayout
@@ -106,7 +105,7 @@
                         android:scaleType="centerCrop"
                         android:background="@drawable/rounded_corner_18"
                         android:layout_marginEnd="10dp"
-                        android:contentDescription="冰鉴"
+                        android:contentDescription="@string/bingjian_description"
                         android:clickable="true"
                         android:focusable="true" />
 
@@ -118,7 +117,7 @@
                         android:scaleType="centerCrop"
                         android:background="@drawable/rounded_corner_18"
                         android:layout_marginEnd="10dp"
-                        android:contentDescription="灵心"
+                        android:contentDescription="@string/lingxin_description"
                         android:clickable="true"
                         android:focusable="true" />
 
@@ -129,7 +128,7 @@
                         android:src="@drawable/nuanyang"
                         android:scaleType="centerCrop"
                         android:background="@drawable/rounded_corner_18"
-                        android:contentDescription="暖阳"
+                        android:contentDescription="@string/nuanyang_description"
                         android:clickable="true"
                         android:focusable="true" />
 
@@ -151,7 +150,7 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
-                android:paddingStart="20dp"
+                android:paddingHorizontal="20dp"
                 android:paddingBottom="20dp">
 
                 <View
@@ -163,7 +162,7 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="热点话题"
+                    android:text="@string/hot_topics"
                     android:textSize="20sp"
                     android:textStyle="bold"
                     android:textColor="@color/black"
@@ -179,7 +178,7 @@
                     <RelativeLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:paddingEnd="20dp">
+                        android:paddingHorizontal="20dp">
 
                         <LinearLayout
                             android:id="@+id/categoryContainer"
@@ -191,7 +190,7 @@
                                 android:id="@+id/tvAll"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="全部"
+                                android:text="@string/category_all"
                                 android:textSize="16sp"
                                 android:textColor="@color/category_selected"
                                 android:padding="8dp"
@@ -202,7 +201,7 @@
                                 android:id="@+id/tvPolitics"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="政治"
+                                android:text="@string/category_politics"
                                 android:textSize="14sp"
                                 android:textColor="@color/black"
                                 android:alpha="0.75"
@@ -214,7 +213,7 @@
                                 android:id="@+id/tvSociety"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="社会"
+                                android:text="@string/category_society"
                                 android:textSize="14sp"
                                 android:textColor="@color/black"
                                 android:alpha="0.75"
@@ -226,7 +225,7 @@
                                 android:id="@+id/tvTech"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="科技"
+                                android:text="@string/category_tech"
                                 android:textSize="14sp"
                                 android:textColor="@color/black"
                                 android:alpha="0.75"
@@ -238,7 +237,7 @@
                                 android:id="@+id/tvCulture"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="文化"
+                                android:text="@string/category_culture"
                                 android:textSize="14sp"
                                 android:textColor="@color/black"
                                 android:alpha="0.75"
@@ -250,7 +249,7 @@
                                 android:id="@+id/tvEconomy"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="经济"
+                                android:text="@string/category_economy"
                                 android:textSize="14sp"
                                 android:textColor="@color/black"
                                 android:alpha="0.75"
@@ -291,8 +290,7 @@
                 android:id="@+id/rvTopics"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:paddingStart="20dp"
-                android:paddingEnd="15dp"
+                android:paddingHorizontal="20dp"
                 android:paddingBottom="80dp" />
 
         </LinearLayout>

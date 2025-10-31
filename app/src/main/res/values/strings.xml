@@ -7,8 +7,45 @@
     <string name="follow_count_format">%d 人关注</string>
     <string name="search_result_format">找到 %d 个结果</string>
     <string name="no_search_result_format">没有找到包含\"%s\"的结果</string>
+<<<<<<< HEAD
     <string name="clock">Clock</string>
     <string name="like">Like</string>
     <string name="dislike">Dislike</string>
     <string name="star">Star</string>
+=======
+
+    <!-- 探索页面字符串 -->
+    <string name="explore_title">探究真相</string>
+    <string name="collect_description">收藏</string>
+    <string name="search_description">搜索</string>
+    <string name="truth_detective">真相侦探</string>
+    <string name="bingjian_description">冰鉴</string>
+    <string name="lingxin_description">灵心</string>
+    <string name="nuanyang_description">暖阳</string>
+    <string name="hot_topics">热点话题</string>
+
+    <!-- 分类标签 -->
+    <string name="category_all">全部</string>
+    <string name="category_politics">政治</string>
+    <string name="category_society">社会</string>
+    <string name="category_tech">科技</string>
+    <string name="category_culture">文化</string>
+    <string name="category_economy">经济</string>
+
+    <!-- Topic Collection Strings -->
+    <string name="topic_thumbnail_desc">话题缩略图</string>
+    <string name="topic_title_default">话题标题</string>
+    <string name="topic_content_default">话题内容描述</string>
+    <string name="category_default">分类</string>
+    <string name="follower_count_default">0人关注</string>
+
+    <!-- 详情页面字符串 -->
+    <string name="topic_header_image_desc">话题头部图片</string>
+    <string name="user_avatar_desc">用户头像</string>
+    <string name="topic_description_default">剖析假消息传播，反思观众如何理性守护国产动画。</string>
+    <string name="tab_news">新闻</string>
+    <string name="tab_comments">评论区</string>
+    <string name="comment_hint">期待您的评论</string>
+    <string name="send_description">发送</string>
+>>>>>>> a682eaa28bcb3d3cbcb48d9252c5789f3ab28110
 </resources>

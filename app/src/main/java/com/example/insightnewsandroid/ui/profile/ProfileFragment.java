@@ -22,6 +22,7 @@ import com.example.insightnewsandroid.auth.AuthRepository;
 import com.example.insightnewsandroid.auth.WelcomeActivity;
 import com.example.insightnewsandroid.data.UserProfileManager;
 import com.example.insightnewsandroid.data.model.UserProfile;
+import com.example.insightnewsandroid.HistoryActivity;
 
 public class ProfileFragment extends Fragment {
 
@@ -104,55 +105,81 @@ public class ProfileFragment extends Fragment {
         }
     }
 
-    // ProfileFragment.java - 修改 setupClickListeners 方法
-// ProfileFragment.java - 修改 setupClickListeners 方法
     private void setupClickListeners() {
-        // 编辑资料 - 这个已经工作
+        // 编辑资料
         requireView().findViewById(R.id.btn_edit_profile).setOnClickListener(v -> {
             Log.d("ProfileFragment", "点击编辑资料按钮");
             try {
-                Log.d("ProfileFragment", "准备启动 EditProfileActivity");
                 Intent intent = new Intent(requireContext(), EditProfileActivity.class);
-                Log.d("ProfileFragment", "Intent 创建成功");
                 startActivity(intent);
-                Log.d("ProfileFragment", "成功启动 EditProfileActivity");
             } catch (Exception e) {
                 Log.e("ProfileFragment", "启动 EditProfileActivity 失败", e);
                 Toast.makeText(requireContext(), "无法打开编辑资料: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                e.printStackTrace();
             }
         });
 
-        // 新闻收藏 - 添加详细日志
+        // 新闻收藏
         requireView().findViewById(R.id.btn_collection).setOnClickListener(v -> {
             Log.d("ProfileFragment", "点击新闻收藏按钮");
             try {
-                Log.d("ProfileFragment", "准备启动 NewsCollectionActivity");
                 Intent intent = new Intent(requireContext(), NewsCollectionActivity.class);
-                Log.d("ProfileFragment", "Intent 创建成功");
                 startActivity(intent);
-                Log.d("ProfileFragment", "成功启动 NewsCollectionActivity");
             } catch (Exception e) {
                 Log.e("ProfileFragment", "启动 NewsCollectionActivity 失败", e);
                 Toast.makeText(requireContext(), "无法打开新闻收藏: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            }
+        });
+
+        // 话题收藏
+        requireView().findViewById(R.id.btn_topic_collection).setOnClickListener(v -> {
+            Log.d("ProfileFragment", "点击话题收藏按钮");
+            try {
+                Intent intent = new Intent(requireContext(), TopicCollectionActivity.class);
+                startActivity(intent);
+            } catch (Exception e) {
+                Log.e("ProfileFragment", "启动 TopicCollectionActivity 失败", e);
+                Toast.makeText(requireContext(), "无法打开话题收藏: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            }
+        });
+
+        // 历史记录 - 新增的点击事件
+        requireView().findViewById(R.id.btn_history).setOnClickListener(v -> {
+            Log.d("ProfileFragment", "点击历史记录按钮");
+            try {
+                Log.d("ProfileFragment", "准备启动 HistoryActivity");
+                Intent intent = new Intent(requireContext(), HistoryActivity.class);
+                Log.d("ProfileFragment", "Intent 创建成功");
+                startActivity(intent);
+                Log.d("ProfileFragment", "成功启动 HistoryActivity");
+            } catch (Exception e) {
+                Log.e("ProfileFragment", "启动 HistoryActivity 失败", e);
+                Toast.makeText(requireContext(), "无法打开历史记录: " + e.getMessage(), Toast.LENGTH_LONG).show();
                 e.printStackTrace();
             }
         });
 
-        // 话题收藏 - 这个已经工作
-        requireView().findViewById(R.id.btn_topic_collection).setOnClickListener(v -> {
-            Log.d("ProfileFragment", "点击话题收藏按钮");
-            try {
-                Log.d("ProfileFragment", "准备启动 TopicCollectionActivity");
-                Intent intent = new Intent(requireContext(), TopicCollectionActivity.class);
-                Log.d("ProfileFragment", "Intent 创建成功");
-                startActivity(intent);
-                Log.d("ProfileFragment", "成功启动 TopicCollectionActivity");
-            } catch (Exception e) {
-                Log.e("ProfileFragment", "启动 TopicCollectionActivity 失败", e);
-                Toast.makeText(requireContext(), "无法打开话题收藏: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                e.printStackTrace();
-            }
+        // 设置
+        requireView().findViewById(R.id.btn_setting).setOnClickListener(v -> {
+            Log.d("ProfileFragment", "点击设置按钮");
+            Toast.makeText(requireContext(), "设置功能开发中", Toast.LENGTH_SHORT).show();
+        });
+
+        // 问题反馈
+        requireView().findViewById(R.id.btn_feedback).setOnClickListener(v -> {
+            Log.d("ProfileFragment", "点击问题反馈按钮");
+            showFeedbackDialog();
+        });
+
+        // 退出登录 - 关键修改：添加退出登录按钮监听
+        requireView().findViewById(R.id.btn_logout).setOnClickListener(v -> {
+            Log.d("ProfileFragment", "点击退出登录按钮");
+            showLogoutDialog();
+        });
+
+        // 头像编辑按钮
+        requireView().findViewById(R.id.btn_edit_avatar).setOnClickListener(v -> {
+            Log.d("ProfileFragment", "点击头像编辑按钮");
+            selectImage();
         });
     }
 
@@ -207,7 +234,7 @@ public class ProfileFragment extends Fragment {
                 .setTitle("确认退出")
                 .setMessage("确定要退出登录吗？")
                 .setPositiveButton("确定", (dialog, which) -> handleLogout())
-                .setNegativeButton("Cancel", null)
+                .setNegativeButton("取消", null)
                 .show();
     }
 

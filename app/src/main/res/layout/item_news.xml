@@ -27,7 +27,7 @@
             android:layout_height="wrap_content"
             android:text="政治"
             android:textSize="10sp"
-            android:background="@drawable/rounded_category_bg"
+            android:background="@drawable/rounded_blue_rectangle"
             android:paddingHorizontal="6dp"
             android:paddingVertical="2dp"
             android:textColor="@color/white"

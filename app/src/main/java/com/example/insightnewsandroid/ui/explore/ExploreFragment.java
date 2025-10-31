@@ -21,6 +21,7 @@ import com.example.insightnewsandroid.R;
 import com.example.insightnewsandroid.databinding.FragmentExploreBinding;
 import com.example.insightnewsandroid.ui.explore.model.ExploreTopic;
 import com.example.insightnewsandroid.ui.detail.DetailTopicActivity;
+import com.example.insightnewsandroid.ui.profile.TopicCollectionActivity;
 
 public class ExploreFragment extends Fragment {
 
@@ -59,21 +60,19 @@ public class ExploreFragment extends Fragment {
     }
 
     private void setupViews() {
+
         // 设置RecyclerView
         topicAdapter = new ExploreTopicAdapter();
         binding.rvTopics.setLayoutManager(new LinearLayoutManager(getContext()));
         binding.rvTopics.setAdapter(topicAdapter);
 
-        // 设置收藏点击
+        // 设置收藏点击 - 修改为跳转到话题收藏页面
         binding.ivCollect.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (token != null) {
-                    viewModel.fetchTopicCollect(token);
-                    Toast.makeText(getContext(), "话题收藏功能开发中", Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(getContext(), "请先登录", Toast.LENGTH_SHORT).show();
-                }
+                // 跳转到话题收藏页面
+                Intent intent = new Intent(getActivity(), TopicCollectionActivity.class);
+                startActivity(intent);
             }
         });
 
