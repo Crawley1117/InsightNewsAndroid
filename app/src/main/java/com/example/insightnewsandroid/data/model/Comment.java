@@ -93,6 +93,10 @@ public class Comment {
         this.like = like;
     }
 
+    public boolean isMyComment() {
+        return myComment;
+    }
+
     public void setMyComment(boolean myComment) {
         this.myComment = myComment;
     }
