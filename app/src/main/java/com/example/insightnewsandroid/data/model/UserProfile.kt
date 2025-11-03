@@ -1,6 +1,7 @@
 package com.example.insightnewsandroid.data.model
 
 data class UserProfile(
+    val userId: Int = 1, // 添加用户ID，默认为1
     val username: String = "新用户",
     val bio: String = "这位用户很懒，什么都没有写",
     val gender: Int = 2, // 0: male, 1: female, 2: secret
