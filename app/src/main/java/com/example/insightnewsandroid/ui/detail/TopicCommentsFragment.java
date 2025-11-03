@@ -1,5 +1,6 @@
 package com.example.insightnewsandroid.ui.detail;
 
+import android.content.Context;
 import android.graphics.Rect;
 import android.os.Bundle;
 import android.os.Handler;
@@ -7,7 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
-import android.view.animation.AccelerateDecelerateInterpolator;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Toast;
 import android.util.Log;
 
@@ -40,7 +41,13 @@ public class TopicCommentsFragment extends Fragment {
 
     private ViewTreeObserver.OnGlobalLayoutListener keyboardLayoutListener;
     private boolean isKeyboardShowing = false;
-    private int keyboardHeight = 0;
+
+    // 定义回调接口 - 修改：添加 commentId 参数
+    public interface OnCommentActionListener {
+        void onShowCommentInput(String hint, int commentId);
+    }
+
+    private OnCommentActionListener commentActionListener;
 
     public static TopicCommentsFragment newInstance(int topicId, String token) {
         TopicCommentsFragment fragment = new TopicCommentsFragment();
@@ -49,6 +56,23 @@ public class TopicCommentsFragment extends Fragment {
         args.putString("TOKEN", token);
         fragment.setArguments(args);
         return fragment;
+    }
+
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        // 检查Activity是否实现了回调接口
+        if (context instanceof OnCommentActionListener) {
+            commentActionListener = (OnCommentActionListener) context;
+        } else {
+            Log.w("TopicCommentsFragment", "Activity没有实现OnCommentActionListener接口");
+        }
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        commentActionListener = null;
     }
 
     @Nullable
@@ -91,17 +115,13 @@ public class TopicCommentsFragment extends Fragment {
 
             @Override
             public void onReplyClick(int commentId, String username) {
-                binding.etComment.setHint("回复 " + username);
-                binding.etComment.requestFocus();
-            }
-        });
-
-        binding.btnSend.setOnClickListener(v -> {
-            String commentContent = binding.etComment.getText().toString().trim();
-            if (!commentContent.isEmpty()) {
-                viewModel.addComment(topicId, commentContent);
-            } else {
-                Toast.makeText(getContext(), "评论内容不能为空", Toast.LENGTH_SHORT).show();
+                // 使用接口回调通知Activity，并传递 commentId
+                if (commentActionListener != null) {
+                    commentActionListener.onShowCommentInput("回复 " + username, commentId);
+                } else {
+                    // 备用方案：显示提示信息
+                    showCommentInputFallback("回复 " + username);
+                }
             }
         });
 
@@ -109,24 +129,20 @@ public class TopicCommentsFragment extends Fragment {
             loadComments();
         });
 
-        binding.etComment.addTextChangedListener(new android.text.TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                binding.btnSend.setVisibility(s.length() > 0 ? View.VISIBLE : View.GONE);
-            }
-
-            @Override
-            public void afterTextChanged(android.text.Editable s) {}
-        });
-
         Log.d("TopicCommentsFragment", "initView完成, topicId=" + topicId);
     }
 
     /**
-     * 动态检测键盘高度 - 每个人的键盘高度可能不同
+     * 备用方案：显示提示信息
+     */
+    private void showCommentInputFallback(String hint) {
+        // 由于现在使用对话框方式，备用方案只需要显示提示
+        Toast.makeText(getContext(), hint, Toast.LENGTH_SHORT).show();
+        Log.d("TopicCommentsFragment", "备用方案：显示提示: " + hint);
+    }
+
+    /**
+     * 动态检测键盘高度
      */
     private void setupKeyboardListener() {
         if (getActivity() != null) {
@@ -135,7 +151,6 @@ public class TopicCommentsFragment extends Fragment {
             keyboardLayoutListener = new ViewTreeObserver.OnGlobalLayoutListener() {
                 private final Rect rect = new Rect();
                 private boolean lastKeyboardShowing = false;
-                private int lastKeyboardHeight = 0;
 
                 @Override
                 public void onGlobalLayout() {
@@ -150,16 +165,12 @@ public class TopicCommentsFragment extends Fragment {
                     boolean keyboardNowShowing = heightDifference > screenHeight * 0.15;
 
                     // 只有状态变化时才处理
-                    if (keyboardNowShowing != lastKeyboardShowing ||
-                            (keyboardNowShowing && heightDifference != lastKeyboardHeight)) {
-
+                    if (keyboardNowShowing != lastKeyboardShowing) {
                         lastKeyboardShowing = keyboardNowShowing;
-                        lastKeyboardHeight = heightDifference;
 
                         if (keyboardNowShowing) {
-                            keyboardHeight = heightDifference;
-                            onKeyboardShown(keyboardHeight);
-                            Log.d("TopicCommentsFragment", "键盘弹出，动态高度: " + keyboardHeight + "px, 屏幕高度: " + screenHeight + "px");
+                            onKeyboardShown(heightDifference);
+                            Log.d("TopicCommentsFragment", "键盘弹出，高度: " + heightDifference + "px");
                         } else {
                             onKeyboardHidden();
                             Log.d("TopicCommentsFragment", "键盘收起");
@@ -173,82 +184,50 @@ public class TopicCommentsFragment extends Fragment {
     }
 
     /**
-     * 键盘显示时的处理 - 动态适配不同键盘高度
+     * 键盘显示时的处理 - 调整评论列表底部边距
      */
     private void onKeyboardShown(int keyboardHeight) {
-        Log.d("TopicCommentsFragment", "检测到键盘高度: " + keyboardHeight + "px");
+        Log.d("TopicCommentsFragment", "键盘弹出，调整评论列表底部边距: " + keyboardHeight + "px");
 
-        // 计算输入区域需要上移的距离（键盘高度 + 状态栏高度补偿）
-        int statusBarHeight = getStatusBarHeight();
-        int translateY = -keyboardHeight + statusBarHeight;
+        // 计算输入区域的高度（大约100dp）
+        int inputAreaHeight = dpToPx(100);
 
-        Log.d("TopicCommentsFragment", "状态栏高度: " + statusBarHeight + "px, 实际上移距离: " + translateY + "px");
-
-        // 使用平移动画将输入区域上移到键盘上方
-        binding.llCommentInput.animate()
-                .translationY(translateY)
-                .setDuration(300)
-                .setInterpolator(new AccelerateDecelerateInterpolator())
-                .start();
-
-        // 调整 RecyclerView 的底部边距，确保内容不被键盘遮挡
-        // 底部边距 = 键盘高度 + 输入区域高度 + 额外间距
-        int inputAreaHeight = binding.llCommentInput.getHeight();
-        int bottomMargin = keyboardHeight + inputAreaHeight + dpToPx(8);
-
+        // 设置评论列表的底部边距 = 键盘高度 + 输入区域高度
         ViewGroup.MarginLayoutParams recyclerParams = (ViewGroup.MarginLayoutParams) binding.recyclerViewComments.getLayoutParams();
-        recyclerParams.bottomMargin = bottomMargin;
+        recyclerParams.bottomMargin = keyboardHeight + inputAreaHeight;
         binding.recyclerViewComments.setLayoutParams(recyclerParams);
         binding.recyclerViewComments.requestLayout();
 
-        Log.d("TopicCommentsFragment", "输入区域高度: " + inputAreaHeight + "px, RecyclerView底部边距: " + bottomMargin + "px");
+        Log.d("TopicCommentsFragment", "设置底部边距: " + recyclerParams.bottomMargin + "px");
 
-        // 延迟滚动到底部，确保布局更新完成
+        // 延迟滚动到底部，确保能看到最新评论
         new Handler().postDelayed(() -> {
             scrollToBottomSmooth();
         }, 200);
     }
 
     /**
-     * 键盘隐藏时的处理
+     * 键盘隐藏时的处理 - 恢复评论列表布局
      */
     private void onKeyboardHidden() {
-        Log.d("TopicCommentsFragment", "键盘隐藏，恢复输入区域位置");
+        Log.d("TopicCommentsFragment", "键盘隐藏，恢复评论列表布局");
 
-        // 使用平移动画将输入区域移回原位
-        binding.llCommentInput.animate()
-                .translationY(0)
-                .setDuration(300)
-                .setInterpolator(new AccelerateDecelerateInterpolator())
-                .start();
-
-        // 恢复 RecyclerView 的底部边距
+        // 恢复评论列表的底部边距
         ViewGroup.MarginLayoutParams recyclerParams = (ViewGroup.MarginLayoutParams) binding.recyclerViewComments.getLayoutParams();
         recyclerParams.bottomMargin = dpToPx(8);
         binding.recyclerViewComments.setLayoutParams(recyclerParams);
         binding.recyclerViewComments.requestLayout();
-
-        // 清除焦点
-        binding.etComment.clearFocus();
-        binding.etComment.setHint("期待您的评论...");
     }
 
     /**
-     * 获取状态栏高度
+     * 当Activity的输入框获得焦点时调用
      */
-    private int getStatusBarHeight() {
-        int statusBarHeight = 0;
-        try {
-            int resourceId = getResources().getIdentifier("status_bar_height", "dimen", "android");
-            if (resourceId > 0) {
-                statusBarHeight = getResources().getDimensionPixelSize(resourceId);
-            }
-        } catch (Exception e) {
-            Log.e("TopicCommentsFragment", "获取状态栏高度失败: " + e.getMessage());
-            // 默认状态栏高度
-            statusBarHeight = dpToPx(24);
-        }
-        return statusBarHeight;
+    public void onCommentInputFocused() {
+        // 确保评论列表可见并滚动到底部
+        binding.recyclerViewComments.setVisibility(View.VISIBLE);
+        new Handler().postDelayed(() -> {
+            scrollToBottomSmooth();
+        }, 300);
     }
 
     /**
@@ -274,7 +253,7 @@ public class TopicCommentsFragment extends Fragment {
     }
 
     /**
-     * dp转px - 确保此方法只定义一次
+     * dp转px
      */
     private int dpToPx(int dp) {
         if (getContext() == null) return dp;
@@ -291,14 +270,8 @@ public class TopicCommentsFragment extends Fragment {
 
         viewModel.getCommentSuccess().observe(getViewLifecycleOwner(), success -> {
             if (success) {
-                String newComment = binding.etComment.getText().toString().trim();
-                if (!newComment.isEmpty()) {
-                    addNewCommentToUI(newComment);
-                    binding.etComment.setText("");
-                    binding.etComment.setHint("期待您的评论");
-                    binding.btnSend.setVisibility(View.GONE);
-                }
                 loadComments();
+                binding.swipeRefresh.setRefreshing(false);
             }
         });
 
@@ -312,6 +285,7 @@ public class TopicCommentsFragment extends Fragment {
         viewModel.getErrorMessage().observe(getViewLifecycleOwner(), error -> {
             if (error != null && !error.isEmpty()) {
                 Toast.makeText(getContext(), error, Toast.LENGTH_SHORT).show();
+                binding.swipeRefresh.setRefreshing(false);
             }
         });
     }
@@ -327,41 +301,20 @@ public class TopicCommentsFragment extends Fragment {
         timeUpdateHandler.postDelayed(timeUpdateRunnable, TIME_UPDATE_INTERVAL);
     }
 
+    /**
+     * 更新评论时间显示
+     */
     private void updateCommentsTime() {
         if (viewModel != null && commentsAdapter != null) {
+            Log.d("TopicCommentsFragment", "开始更新评论时间显示");
             viewModel.updateCommentsRelativeTime(topicId);
             List<Comment> updatedComments = viewModel.getCommentsForTopic(topicId);
-            commentsAdapter.updateComments(updatedComments);
+
+            if (updatedComments != null && !updatedComments.isEmpty()) {
+                commentsAdapter.updateComments(updatedComments);
+                Log.d("TopicCommentsFragment", "评论时间显示已更新，数量: " + updatedComments.size());
+            }
         }
-    }
-
-    private void addNewCommentToUI(String commentContent) {
-        Comment newComment = new Comment();
-        newComment.setId((int) System.currentTimeMillis());
-        newComment.setUsername(getCurrentUsername());
-        newComment.setUserImg(getCurrentUserAvatar());
-        newComment.setComment(commentContent);
-        newComment.setTimestamp(System.currentTimeMillis());
-        newComment.setCreatedAt("刚刚");
-        newComment.setLikeCount(0);
-        newComment.setLike(false);
-        newComment.setMyComment(true);
-        newComment.setChildren(new ArrayList<>());
-
-        List<Comment> currentComments = commentsAdapter.getComments();
-        if (currentComments == null) {
-            currentComments = new ArrayList<>();
-        }
-
-        currentComments.add(0, newComment);
-        commentsAdapter.updateComments(currentComments);
-
-        binding.tvPlaceholder.setVisibility(View.GONE);
-        binding.recyclerViewComments.setVisibility(View.VISIBLE);
-
-        scrollToBottomSmooth();
-
-        Toast.makeText(getContext(), "评论已发布", Toast.LENGTH_SHORT).show();
     }
 
     private void loadComments() {
@@ -370,6 +323,7 @@ public class TopicCommentsFragment extends Fragment {
         List<Comment> comments = viewModel.getCommentsForTopic(topicId);
         Log.d("TopicCommentsFragment", "加载评论，数量: " + comments.size());
 
+        comments = updateCommentsUserInfo(comments);
         commentsAdapter.updateComments(comments);
 
         if (comments.isEmpty()) {
@@ -383,11 +337,48 @@ public class TopicCommentsFragment extends Fragment {
         binding.swipeRefresh.setRefreshing(false);
     }
 
+    /**
+     * 更新评论中的用户信息
+     */
+    private List<Comment> updateCommentsUserInfo(List<Comment> comments) {
+        if (comments == null || comments.isEmpty()) {
+            return comments;
+        }
+
+        int currentUserId = getCurrentUserId();
+        String currentUsername = getCurrentUsername();
+        String currentUserAvatar = getCurrentUserAvatar();
+
+        for (Comment comment : comments) {
+            if (comment.getUserId() == currentUserId) {
+                comment.setUsername(currentUsername);
+                comment.setUserImg(currentUserAvatar);
+            }
+
+            if (comment.getChildren() != null && !comment.getChildren().isEmpty()) {
+                updateCommentsUserInfo(comment.getChildren());
+            }
+        }
+
+        return comments;
+    }
+
+    /**
+     * 获取当前用户ID
+     */
+    private int getCurrentUserId() {
+        if (getContext() != null) {
+            UserProfile profile = UserProfileManager.INSTANCE.getCurrentProfile(getContext());
+            return profile.getUserId();
+        }
+        return 1;
+    }
+
     private String getCurrentUsername() {
         if (getContext() != null) {
             UserProfile profile = UserProfileManager.INSTANCE.getCurrentProfile(getContext());
             String username = profile.getUsername();
-            return username;
+            return username != null ? username : "新用户";
         }
         return "新用户";
     }
@@ -401,8 +392,18 @@ public class TopicCommentsFragment extends Fragment {
         return "";
     }
 
+    /**
+     * 刷新评论列表
+     */
     public void refreshComments() {
         loadComments();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        loadComments();
+        Log.d("TopicCommentsFragment", "Fragment恢复，重新加载评论");
     }
 
     @Override
