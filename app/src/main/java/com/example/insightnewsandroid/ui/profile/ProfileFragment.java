@@ -3,6 +3,8 @@ package com.example.insightnewsandroid.ui.profile;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +15,7 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 
 import com.bumptech.glide.Glide;
@@ -24,9 +27,15 @@ import com.example.insightnewsandroid.data.UserProfileManager;
 import com.example.insightnewsandroid.data.model.UserProfile;
 import com.example.insightnewsandroid.HistoryActivity;
 
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 public class ProfileFragment extends Fragment {
 
     private static final int PICK_IMAGE_REQUEST = 1;
+    private static final int TAKE_PHOTO_REQUEST = 2;
 
     private AuthRepository authRepository;
     private UserProfile currentProfile;
@@ -34,6 +43,8 @@ public class ProfileFragment extends Fragment {
     // Views
     private ImageView ivAvatar, ivGender;
     private TextView tvUsername, tvBio;
+
+    private String currentPhotoPath;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -176,49 +187,155 @@ public class ProfileFragment extends Fragment {
             showLogoutDialog();
         });
 
-        // 头像编辑按钮
+        // 头像编辑按钮 - 修改为显示选择对话框
         requireView().findViewById(R.id.btn_edit_avatar).setOnClickListener(v -> {
             Log.d("ProfileFragment", "点击头像编辑按钮");
-            selectImage();
+            showImageSelectionDialog();
+        });
+
+        // 头像本身也可以点击
+        ivAvatar.setOnClickListener(v -> {
+            Log.d("ProfileFragment", "点击头像");
+            showImageSelectionDialog();
         });
     }
 
-    private void selectImage() {
+    // 显示选择图片方式的对话框
+    private void showImageSelectionDialog() {
+        String[] options = {"拍照", "从相册选择", "取消"};
+        androidx.appcompat.app.AlertDialog.Builder builder = new androidx.appcompat.app.AlertDialog.Builder(requireContext());
+        builder.setTitle("选择头像");
+        builder.setItems(options, (dialog, which) -> {
+            switch (which) {
+                case 0: // 拍照
+                    takePhoto();
+                    break;
+                case 1: // 从相册选择
+                    selectImageFromGallery();
+                    break;
+                case 2: // 取消
+                    dialog.dismiss();
+                    break;
+            }
+        });
+        builder.show();
+    }
+
+    private void selectImageFromGallery() {
         Intent intent = new Intent(Intent.ACTION_PICK);
         intent.setType("image/*");
         startActivityForResult(Intent.createChooser(intent, "选择头像"), PICK_IMAGE_REQUEST);
+    }
+
+    // 拍照
+    private void takePhoto() {
+        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        // 确保有相机应用可以处理这个意图
+        if (takePictureIntent.resolveActivity(requireContext().getPackageManager()) != null) {
+            // 创建图片文件
+            File photoFile = null;
+            try {
+                photoFile = createImageFile();
+            } catch (IOException ex) {
+                Toast.makeText(requireContext(), "创建图片文件失败", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            if (photoFile != null) {
+                Uri photoURI = FileProvider.getUriForFile(requireContext(),
+                        requireContext().getPackageName() + ".fileprovider",
+                        photoFile);
+                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
+                startActivityForResult(takePictureIntent, TAKE_PHOTO_REQUEST);
+            }
+        } else {
+            Toast.makeText(requireContext(), "没有找到相机应用", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    // 创建图片文件
+    private File createImageFile() throws IOException {
+        // 创建唯一的文件名
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String imageFileName = "JPEG_" + timeStamp + "_";
+        File storageDir = requireContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        File image = File.createTempFile(
+                imageFileName,  /* 前缀 */
+                ".jpg",         /* 后缀 */
+                storageDir      /* 目录 */
+        );
+
+        // 保存文件路径用于后续使用
+        currentPhotoPath = image.getAbsolutePath();
+        return image;
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == PICK_IMAGE_REQUEST && resultCode == getActivity().RESULT_OK && data != null && data.getData() != null) {
-            Uri imageUri = data.getData();
+        if (resultCode == getActivity().RESULT_OK) {
+            Uri imageUri = null;
 
-            // 更新用户资料 - 使用当前用户资料的值
-            UserProfile updatedProfile = new UserProfile(
-                    currentProfile.getUsername(),  // 使用现有的用户名
-                    currentProfile.getBio(),       // 使用现有的简介
-                    currentProfile.getGender(),    // 使用现有的性别
-                    imageUri.toString(),           // 使用新选择的图片URI
-                    currentProfile.getCollectedNews(),
-                    currentProfile.getLikedNews(),
-                    currentProfile.getDislikedNews(),
-                    currentProfile.getCollectedTopics() // 添加收藏的话题列表
-            );
+            switch (requestCode) {
+                case PICK_IMAGE_REQUEST: // 从相册选择
+                    if (data != null && data.getData() != null) {
+                        imageUri = data.getData();
+                        Toast.makeText(requireContext(), "头像已选择", Toast.LENGTH_SHORT).show();
+                    }
+                    break;
 
-            // 保存到统一数据源
-            UserProfileManager.INSTANCE.updateProfile(requireContext(), updatedProfile);
+                case TAKE_PHOTO_REQUEST: // 拍照
+                    if (currentPhotoPath != null) {
+                        File photoFile = new File(currentPhotoPath);
+                        if (photoFile.exists()) {
+                            imageUri = Uri.fromFile(photoFile);
+                            Toast.makeText(requireContext(), "照片已拍摄", Toast.LENGTH_SHORT).show();
 
-            // 更新当前资料引用
-            currentProfile = updatedProfile;
+                            // 通知系统更新相册
+                            Intent mediaScanIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+                            mediaScanIntent.setData(imageUri);
+                            requireContext().sendBroadcast(mediaScanIntent);
+                        }
+                    }
+                    break;
+            }
 
-            // 重新加载数据
-            loadUserData();
-
-            Toast.makeText(requireContext(), "头像更新成功", Toast.LENGTH_SHORT).show();
+            // 如果有图片URI，更新头像
+            if (imageUri != null) {
+                updateAvatar(imageUri.toString());
+            }
         }
+    }
+
+    // 更新头像
+    private void updateAvatar(String imageUriString) {
+        // 获取当前用户资料
+        UserProfile currentProfile = UserProfileManager.INSTANCE.getCurrentProfile(requireContext());
+
+        // 更新用户资料 - 传递所有参数
+        UserProfile updatedProfile = new UserProfile(
+                currentProfile.getUserId(),           // 用户ID
+                currentProfile.getUsername(),         // 使用现有的用户名
+                currentProfile.getBio(),              // 使用现有的简介
+                currentProfile.getGender(),           // 使用现有的性别
+                imageUriString,                       // 使用新选择的图片URI
+                currentProfile.getCollectedNews(),    // 收藏的新闻
+                currentProfile.getLikedNews(),        // 点赞的新闻
+                currentProfile.getDislikedNews(),     // 不喜欢的新闻
+                currentProfile.getCollectedTopics()   // 收藏的话题
+        );
+
+        // 保存到统一数据源
+        UserProfileManager.INSTANCE.updateProfile(requireContext(), updatedProfile);
+
+        // 更新当前资料引用
+        currentProfile = updatedProfile;
+
+        // 重新加载数据
+        loadUserData();
+
+        Toast.makeText(requireContext(), "头像更新成功", Toast.LENGTH_SHORT).show();
     }
 
     private void showFeedbackDialog() {
