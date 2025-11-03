@@ -59,11 +59,14 @@
 
                 <TextView
                     android:id="@+id/tv_username"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_weight="1"
                     android:text=""
                     android:textSize="24sp"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    android:ellipsize="end"
+                    android:maxLines="1" />
 
                 <!-- 性别图标 -->
                 <ImageView
@@ -71,11 +74,6 @@
                     android:layout_width="20dp"
                     android:layout_height="20dp"
                     android:layout_marginStart="8dp" />
-
-                <Space
-                    android:layout_width="0dp"
-                    android:layout_height="0dp"
-                    android:layout_weight="1" />
 
                 <!-- 编辑资料按钮 -->
                 <LinearLayout
@@ -105,6 +103,7 @@
                         android:textColor="@android:color/white" />
 
                 </LinearLayout>
+
 
             </LinearLayout>
 
