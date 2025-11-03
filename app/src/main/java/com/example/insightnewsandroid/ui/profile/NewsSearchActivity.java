@@ -179,16 +179,17 @@ public class NewsSearchActivity extends AppCompatActivity {
                 collectedTopics = new ArrayList<>();
             }
 
-            // 创建更新后的用户资料
+            // 创建更新后的用户资料 - 修正参数匹配问题
             UserProfile updatedProfile = new UserProfile(
-                    currentProfile.getUsername(),      // 用户名
-                    currentProfile.getBio(),           // 简介
-                    currentProfile.getGender(),        // 性别
-                    currentProfile.getAvatarUri(),     // 头像
-                    allNewsList,                       // 使用 allNewsList
-                    currentProfile.getLikedNews(),     // 点赞的新闻
-                    currentProfile.getDislikedNews(),  // 点踩的新闻
-                    collectedTopics                    // 直接传递List<Topic>，不是JSON字符串
+                    currentProfile.getUserId(),      // 添加 userId
+                    currentProfile.getUsername(),    // 用户名
+                    currentProfile.getBio(),         // 简介
+                    currentProfile.getGender(),      // 性别
+                    currentProfile.getAvatarUri(),   // 头像
+                    allNewsList,                     // 使用 allNewsList
+                    currentProfile.getLikedNews(),   // 点赞的新闻
+                    currentProfile.getDislikedNews(),// 点踩的新闻
+                    collectedTopics                  // 收藏的话题
             );
 
             // 保存更新后的资料
