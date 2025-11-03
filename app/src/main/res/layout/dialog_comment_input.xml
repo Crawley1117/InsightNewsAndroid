@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@color/white"
+    android:padding="16dp">
+
+    <!-- 标题栏 -->
+
+    <!-- 输入框区域 -->
+    <EditText
+        android:id="@+id/et_comment_input"
+        android:layout_width="373dp"
+        android:layout_height="57dp"
+        android:background="@drawable/edittext_comment_bg"
+        android:gravity="top"
+        android:hint="分享你的想法..."
+        android:inputType="textMultiLine|textCapSentences"
+        android:maxLines="6"
+        android:padding="12dp"
+        android:textColor="@color/black"
+        android:textSize="14sp" />
+
+    <!-- 按钮区域 - 使用FrameLayout让发送按钮浮动在右下角 -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp">
+
+        <ImageButton
+            android:id="@+id/btn_send"
+            android:layout_width="47dp"
+            android:layout_height="47dp"
+            android:layout_gravity="end"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/send_description"
+            android:padding="8dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/ic_send" />
+
+    </FrameLayout>
+
+</LinearLayout>
