@@ -133,16 +133,17 @@ public class NewsCollectionActivity extends AppCompatActivity {
                 collectedTopics = new ArrayList<>();
             }
 
-            // 创建更新后的用户资料
+            // 创建更新后的用户资料 - 修正构造函数调用
             UserProfile updatedProfile = new UserProfile(
-                    currentProfile.getUsername(),
-                    currentProfile.getBio(),
-                    currentProfile.getGender(),
-                    currentProfile.getAvatarUri(),
-                    newsList,  // 更新新闻收藏
-                    currentProfile.getLikedNews(),
-                    currentProfile.getDislikedNews(),
-                    collectedTopics  // 使用上面定义的变量
+                    currentProfile.getUserId(),           // 用户ID
+                    currentProfile.getUsername(),         // 用户名
+                    currentProfile.getBio(),              // 个性签名
+                    currentProfile.getGender(),           // 性别
+                    currentProfile.getAvatarUri(),        // 头像URI
+                    newsList,                             // 更新新闻收藏
+                    currentProfile.getLikedNews(),        // 点赞的新闻
+                    currentProfile.getDislikedNews(),     // 不喜欢的新闻
+                    collectedTopics                       // 收藏的话题
             );
 
             UserProfileManager.INSTANCE.updateProfile(this, updatedProfile);
