@@ -53,28 +53,42 @@ public class HistoryAdapter extends ListAdapter<DetectionRecordEntity, HistoryAd
         }
 
         void bind(DetectionRecordEntity record) {
+            // 设置文本
             titleText.setText(record.title);
             dateText.setText(new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
                     .format(new Date(record.detectionDate)));
             credibilityTag.setText(record.credibilityLevel);
 
-            // ✅ Java 11 兼容的 switch 语句
+            // --- 更新文本行数限制 ---
+            titleText.setMaxLines(1);
+            dateText.setMaxLines(1);
+            credibilityTag.setMaxLines(1);
+            // --- 修改结束 ---
+
+            // --- 为整个 itemView 设置背景 ---
             int bg;
             switch (record.credibilityLevel) {
                 case "高":
-                    bg = R.drawable.bg_credibility_high;
+                    bg = R.drawable.bg_highscore;
                     break;
                 case "较高":
-                    bg = R.drawable.bg_credibility_medium;
+                    bg = R.drawable.bg_sub_highscore;
+                    break;
+                case "中":
+                    bg = R.drawable.bg_medium;
+                    break;
+                case "较低":
+                    bg = R.drawable.bg_sub_lowscore;
                     break;
                 case "低":
-                    bg = R.drawable.bg_credibility_low;
+                    bg = R.drawable.bg_lowscore;
                     break;
                 default:
-                    bg = R.drawable.bg_credibility_medium;
+                    bg = R.drawable.bg_medium;
                     break;
             }
-            credibilityTag.setBackgroundResource(bg);
+            itemView.setBackgroundResource(bg);
+            // --- 修改结束 ---
 
             itemView.setOnClickListener(v -> {
                 Intent intent = new Intent(context, EnhancedReportActivity.class);

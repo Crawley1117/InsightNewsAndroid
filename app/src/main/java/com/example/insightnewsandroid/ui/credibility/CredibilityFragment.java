@@ -2,21 +2,26 @@
 
 package com.example.insightnewsandroid.ui.credibility;
 
-import android.content.Intent; // 添加 Intent 导入
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.example.insightnewsandroid.R;
 import com.example.insightnewsandroid.databinding.FragmentCredibilityBinding;
 import com.example.insightnewsandroid.db.SuspiciousSpan;
+import com.example.insightnewsandroid.HistoryActivity;
 import com.google.android.material.textfield.TextInputEditText;
 
 import com.google.gson.Gson;
@@ -28,6 +33,7 @@ public class CredibilityFragment extends Fragment {
 
     private FragmentCredibilityBinding binding;
     private CredibilityViewModel viewModel;
+    private Toolbar toolbar; // 添加 Toolbar 成员变量
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -42,8 +48,36 @@ public class CredibilityFragment extends Fragment {
         // 初始化 ViewModel
         viewModel = new ViewModelProvider(this).get(CredibilityViewModel.class);
 
+        // 初始化 Toolbar
+        toolbar = binding.toolbar; // 获取 Toolbar 实例
+        if (getActivity() != null) {
+            ((androidx.appcompat.app.AppCompatActivity) getActivity()).setSupportActionBar(toolbar);
+            // 确保 Fragment 能处理菜单
+            setHasOptionsMenu(true);
+        }
+
         setupObservers();
         setupClickListeners();
+    }
+
+    @Override
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+        inflater.inflate(R.menu.credibility_menu, menu); // 加载菜单资源
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        int id = item.getItemId();
+
+        if (id == R.id.action_history) { // 确保 ID 与 menu 文件中一致
+            // 创建 Intent 跳转到 HistoryActivity
+            Intent intent = new Intent(requireContext(), HistoryActivity.class);
+            startActivity(intent);
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     private void setupObservers() {
@@ -80,10 +114,9 @@ public class CredibilityFragment extends Fragment {
     }
 
     private void setupClickListeners() {
-        // 顶部时钟按钮
-        binding.clockButton.setOnClickListener(v -> {
-            Toast.makeText(requireContext(), "时钟功能待实现", Toast.LENGTH_SHORT).show();
-        });
+        // --- 移除对 clockButton 的引用 ---
+        // binding.clockButton.setOnClickListener(v -> { ... });
+        // --- 移除结束 ---
 
         // 输入框右侧的“+”按钮
         binding.addButton.setOnClickListener(v -> {

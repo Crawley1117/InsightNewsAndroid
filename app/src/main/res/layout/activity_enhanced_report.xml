@@ -3,12 +3,14 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_chat">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:background="@drawable/bg_chat">
 
         <!-- 顶部工具栏 -->
         <LinearLayout
@@ -28,25 +30,6 @@
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="返回" />
 
-            <!-- 占位符，用于将标题推到中间 -->
-            <Space
-                android:layout_width="0dp"
-                android:layout_height="1dp"
-                android:layout_weight="1" />
-
-            <!-- 新闻标题 (加大加粗) -->
-            <TextView
-                android:id="@+id/newsTitle"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_gravity="center_vertical"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:gravity="center" />
-
             <!-- 右上角按钮组 -->
             <LinearLayout
                 android:layout_width="wrap_content"
@@ -57,7 +40,7 @@
                     android:id="@+id/btnDownloadPdf"
                     android:layout_width="48dp"
                     android:layout_height="48dp"
-                    android:src="@drawable/ic_download_pdf"
+                    android:src="@drawable/ic_download"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="下载PDF" />
 
@@ -96,51 +79,6 @@
         </ScrollView>
 
         <!-- 底部工具栏 -->
-        <LinearLayout
-            android:id="@+id/bottomToolbar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:background="?attr/colorSurface"
-            android:elevation="4dp"
-            android:padding="8dp">
-
-            <ImageButton
-                android:id="@+id/btnExport"
-                android:layout_width="0dp"
-                android:layout_height="48dp"
-                android:layout_weight="1"
-                android:src="@drawable/ic_export"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="导出" />
-
-            <ImageButton
-                android:id="@+id/btnRate"
-                android:layout_width="0dp"
-                android:layout_height="48dp"
-                android:layout_weight="1"
-                android:src="@drawable/ic_star"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="评价" />
-
-            <ImageButton
-                android:id="@+id/btnBookmark"
-                android:layout_width="0dp"
-                android:layout_height="48dp"
-                android:layout_weight="1"
-                android:src="@drawable/ic_bookmark"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="收藏" />
-
-            <ImageButton
-                android:id="@+id/btnShare"
-                android:layout_width="0dp"
-                android:layout_height="48dp"
-                android:layout_weight="1"
-                android:src="@drawable/ic_share"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="分享" />
-        </LinearLayout>
     </LinearLayout>
 
     <!-- 悬浮 AI 助手图标 -->

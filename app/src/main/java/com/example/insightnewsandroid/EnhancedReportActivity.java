@@ -1,4 +1,5 @@
-// EnhancedReportActivity.java
+// File: app/java/com/example/insightnewsandroid/EnhancedReportActivity.java
+
 package com.example.insightnewsandroid;
 
 import android.content.Context;
@@ -35,20 +36,13 @@ import java.util.List;
 
 public class EnhancedReportActivity extends AppCompatActivity {
 
-    private TextView newsContent;
+    private TextView newsContent; // 只保留存在的 newsContent
     private List<SuspiciousSpan> spans;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_enhanced_report);
-
-        // 设置标题
-        TextView titleView = findViewById(R.id.newsTitle);
-        String title = getIntent().getStringExtra("title");
-        if (title != null) {
-            titleView.setText(title);
-        }
 
         // 获取新闻全文和可疑片段
         String fullText = getIntent().getStringExtra("fullText");
@@ -78,14 +72,33 @@ public class EnhancedReportActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-        // 底部按钮
-        findViewById(R.id.btnExport).setOnClickListener(v -> showExportDialog());
-        findViewById(R.id.btnBookmark).setOnClickListener(v -> toggleBookmark());
-        findViewById(R.id.btnRate).setOnClickListener(v -> Toast.makeText(this, "评价功能开发中", Toast.LENGTH_SHORT).show());
-        findViewById(R.id.btnTranslate).setOnClickListener(v -> Toast.makeText(this, "翻译功能开发中", Toast.LENGTH_SHORT).show());
+        // --- 添加顶部工具栏按钮的点击事件 ---
+        // 返回按钮
+        findViewById(R.id.btnBack).setOnClickListener(v -> finish()); // 简单的返回
+
+        // 下载PDF按钮
+        findViewById(R.id.btnDownloadPdf).setOnClickListener(v -> {
+            Toast.makeText(this, "下载PDF功能开发中", Toast.LENGTH_SHORT).show();
+            // TODO: 实现PDF下载逻辑
+        });
+
+        // 反馈按钮
+        findViewById(R.id.btnFeedback).setOnClickListener(v -> {
+            Toast.makeText(this, "反馈功能开发中", Toast.LENGTH_SHORT).show();
+            // TODO: 实现反馈逻辑
+        });
+
+        // 翻译按钮
+        findViewById(R.id.btnTranslate).setOnClickListener(v -> {
+            Toast.makeText(this, "翻译功能开发中", Toast.LENGTH_SHORT).show();
+            // TODO: 实现翻译逻辑
+        });
+        // --- 顶部按钮事件结束 ---
+
     }
 
     private void applyHighlights(String fullText) {
+        if (newsContent == null) return; // 如果 newsContent 为 null，直接返回
         SpannableString spannable = new SpannableString(fullText);
         for (SuspiciousSpan span : spans) {
             if (span.start >= 0 && span.end <= fullText.length() && span.start < span.end) {
@@ -121,31 +134,4 @@ public class EnhancedReportActivity extends AppCompatActivity {
                 .show();
     }
 
-    private void showExportDialog() {
-        new AlertDialog.Builder(this)
-                .setTitle("导出报告")
-                .setItems(new CharSequence[]{"保存为图片", "保存为 PDF"}, (d, which) -> {
-                    if (which == 0) {
-                        exportAsImage();
-                    } else {
-                        exportAsPdf();
-                    }
-                })
-                .show();
-    }
-
-    private void exportAsImage() {
-        Toast.makeText(this, "图片导出功能开发中", Toast.LENGTH_SHORT).show();
-        // TODO: 实现截图逻辑（需处理 ScrollView 内容完整捕获）
-    }
-
-    private void exportAsPdf() {
-        Toast.makeText(this, "PDF导出功能开发中", Toast.LENGTH_SHORT).show();
-        // TODO: 实现 PDF 生成逻辑
-    }
-
-    private void toggleBookmark() {
-        Toast.makeText(this, "已收藏", Toast.LENGTH_SHORT).show();
-        // TODO: 实现收藏逻辑（更新数据库字段）
-    }
 }
