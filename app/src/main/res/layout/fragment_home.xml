@@ -24,7 +24,7 @@
         android:id="@+id/btnNewDetection"
         style="@style/Widget.Material3.Button.TextButton"
         android:layout_width="0dp"
-        android:layout_height="60dp"
+        android:layout_height="90dp"
         android:text="开始新检测"
         android:textSize="16sp"
         android:background="@android:color/transparent"

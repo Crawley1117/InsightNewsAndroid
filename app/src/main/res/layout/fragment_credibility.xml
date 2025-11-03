@@ -74,7 +74,7 @@
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/assessmentCard"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="160dp"
             android:layout_marginBottom="16dp"
             app:cardCornerRadius="12dp"
             app:cardElevation="4dp">
@@ -131,7 +131,8 @@
                             android:layout_height="24dp"
                             android:background="?attr/selectableItemBackgroundBorderless"
                             android:contentDescription="@string/like"
-                            android:src="@drawable/ic_good" />
+                            android:src="@drawable/ic_good"
+                            android:scaleType="fitCenter"/>
 
                         <ImageButton
                             android:id="@+id/dislikeButton"
@@ -140,7 +141,8 @@
                             android:layout_marginStart="16dp"
                             android:background="?attr/selectableItemBackgroundBorderless"
                             android:contentDescription="@string/dislike"
-                            android:src="@drawable/ic_bad" />
+                            android:src="@drawable/ic_bad"
+                            android:scaleType="fitCenter"/>
 
                         <ImageButton
                             android:id="@+id/starButton"
@@ -153,29 +155,19 @@
                     </LinearLayout>
                 </LinearLayout>
 
-                <!-- 右侧“低”字印章 -->
-                <TextView
-                    android:id="@+id/stampTextView"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="top"
-                    android:layout_marginStart="16dp"
-                    android:alpha="0.3"
-                    android:text="低"
-                    android:textColor="@color/red"
-                    android:textSize="48sp" />
-
             </LinearLayout>
 
             <!-- “查看详细分析报告”按钮 -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/reportButton"
-                style="@style/Widget.Material3.Button.OutlinedButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="bottom|end"
-                android:layout_margin="16dp"
-                android:text="查看详细分析报告" />
+                style="@style/Widget.Material3.Button"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:layout_gravity="bottom|end"
+            android:layout_margin="16dp"
+            android:text="查看详细分析报告"
+            android:textSize="14sp"
+            app:backgroundTint="?attr/colorPrimary" />
         </com.google.android.material.card.MaterialCardView>
     </LinearLayout>
 
@@ -184,17 +176,19 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        app:layout_constraintGuide_percent="0.62" />
+        app:layout_constraintGuide_percent="0.64" />
 
     <!-- 输入与操作区 (按钮区域) -->
+
+    <!-- 功能快捷入口区 (2x2网格) -->
     <LinearLayout
         android:id="@+id/inputContainer"
         android:layout_width="match_parent"
         android:layout_height="70dp"
         android:background="@drawable/bg_hd"
         android:orientation="horizontal"
-        android:padding="16dp"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/guidelineInputArea">
 
@@ -211,7 +205,9 @@
                 android:hint="请输入你想检测的新闻"
                 android:inputType="textMultiLine"
                 android:maxLines="3"
-                android:scrollbars="vertical" />
+                android:scrollbars="vertical"
+                android:textColor="@color/black"
+                android:textColorHint="@color/gray" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.button.MaterialButton
@@ -220,10 +216,9 @@
             android:layout_width="48dp"
             android:layout_height="48dp"
             app:icon="@drawable/ic_add"
-            app:iconSize="24dp" />
+            android:scaleType="fitCenter"/>
     </LinearLayout>
 
-    <!-- 功能快捷入口区 (2x2网格) -->
     <GridLayout
         android:id="@+id/functionGrid"
         android:layout_width="match_parent"
@@ -241,74 +236,74 @@
         <!-- 图片按钮 -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/photoButton"
-            style="@style/Widget.Material3.Button.TextButton"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_columnWeight="1"
-            android:layout_rowWeight="1"
-            android:layout_margin="8dp"
-            android:padding="16dp"
-            android:gravity="center"
-            android:background="@drawable/button_rounded_outline"
-            android:text=""
-            app:icon="@drawable/ic_photo"
-            app:iconSize="48dp"
-            app:iconGravity="textStart"
-            app:iconTint="@color/icon_tint" />
+            style="@style/Widget.Material3.Button.OutlinedButton"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_columnWeight="1"
+        android:layout_rowWeight="1"
+        android:layout_margin="8dp"
+        android:padding="16dp"
+        android:gravity="center"
+        android:background="@drawable/button_rounded_outline"
+        android:text=""
+        app:icon="@drawable/ic_photo"
+        app:iconSize="48dp"
+        app:iconGravity="textStart"
+        app:iconTint="@color/icon_tint" />
 
         <!-- 相机按钮 -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/cameraButton"
-            style="@style/Widget.Material3.Button.TextButton"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_columnWeight="1"
-            android:layout_rowWeight="1"
-            android:layout_margin="8dp"
-            android:padding="16dp"
-            android:gravity="center"
-            android:background="@drawable/button_rounded_outline"
-            android:text=""
-            app:icon="@drawable/ic_camera2"
-            app:iconSize="48dp"
-            app:iconGravity="textStart"
-            app:iconTint="@color/icon_tint" />
+            style="@style/Widget.Material3.Button.OutlinedButton"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_columnWeight="1"
+        android:layout_rowWeight="1"
+        android:layout_margin="8dp"
+        android:padding="16dp"
+        android:gravity="center"
+        android:background="@drawable/button_rounded_outline"
+        android:text=""
+        app:icon="@drawable/ic_camera2"
+        app:iconSize="48dp"
+        app:iconGravity="textStart"
+        app:iconTint="@color/icon_tint" />
 
         <!-- 麦克风按钮 -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/microphoneButton"
-            style="@style/Widget.Material3.Button.TextButton"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_columnWeight="1"
-            android:layout_rowWeight="1"
-            android:layout_margin="8dp"
-            android:padding="16dp"
-            android:gravity="center"
-            android:background="@drawable/button_rounded_outline"
-            android:text=""
-            app:icon="@drawable/ic_microphone2"
-            app:iconSize="48dp"
-            app:iconGravity="textStart"
-            app:iconTint="@color/icon_tint" />
+            style="@style/Widget.Material3.Button.OutlinedButton"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_columnWeight="1"
+        android:layout_rowWeight="1"
+        android:layout_margin="8dp"
+        android:padding="16dp"
+        android:gravity="center"
+        android:background="@drawable/button_rounded_outline"
+        android:text=""
+        app:icon="@drawable/ic_microphone2"
+        app:iconSize="48dp"
+        app:iconGravity="textStart"
+        app:iconTint="@color/icon_tint" />
 
         <!-- 文件夹按钮 -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/folderButton"
-            style="@style/Widget.Material3.Button.TextButton"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_columnWeight="1"
-            android:layout_rowWeight="1"
-            android:layout_margin="8dp"
-            android:padding="16dp"
-            android:gravity="center"
-            android:background="@drawable/button_rounded_outline"
-            android:text=""
-            app:icon="@drawable/ic_folder2"
-            app:iconSize="48dp"
-            app:iconGravity="textStart"
-            app:iconTint="@color/icon_tint" />
+            style="@style/Widget.Material3.Button.OutlinedButton"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_columnWeight="1"
+        android:layout_rowWeight="1"
+        android:layout_margin="8dp"
+        android:padding="16dp"
+        android:gravity="center"
+        android:background="@drawable/button_rounded_outline"
+        android:text=""
+        app:icon="@drawable/ic_folder2"
+        app:iconSize="48dp"
+        app:iconGravity="textStart"
+        app:iconTint="@color/icon_tint" />
     </GridLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

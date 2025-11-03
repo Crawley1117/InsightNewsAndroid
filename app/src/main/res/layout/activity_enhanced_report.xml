@@ -27,8 +27,15 @@
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:src="@drawable/ic_arrow_back"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="返回" />
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:scaleType="centerInside"
+                android:contentDescription="返回" />
+
+            <!-- 添加一个权重为 1 的空 View 来填充剩余空间 -->
+            <View
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
 
             <!-- 右上角按钮组 -->
             <LinearLayout
@@ -38,29 +45,32 @@
 
                 <ImageButton
                     android:id="@+id/btnDownloadPdf"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
                     android:src="@drawable/ic_download"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="下载PDF" />
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:scaleType="centerInside"
+                    android:contentDescription="下载PDF" />
 
                 <ImageButton
                     android:id="@+id/btnFeedback"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
                     android:src="@drawable/ic_feedback"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:layout_marginStart="8dp"
-                android:contentDescription="反馈" />
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:layout_marginStart="8dp"
+                    android:scaleType="centerInside"
+                    android:contentDescription="反馈" />
 
                 <ImageButton
                     android:id="@+id/btnTranslate"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
                     android:src="@drawable/ic_translate"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:layout_marginStart="8dp"
-                android:contentDescription="翻译" />
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:layout_marginStart="8dp"
+                    android:scaleType="centerInside"
+                    android:contentDescription="翻译" />
             </LinearLayout>
         </LinearLayout>
 
@@ -88,6 +98,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="16dp"
-        app:srcCompat="@drawable/ic_ice_jian" />
+        app:srcCompat="@drawable/ic_ice_jian"
+        app:fabSize="auto" /> <!-- 记得加上 fabSize -->
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
