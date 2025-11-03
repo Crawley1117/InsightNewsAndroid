@@ -5,10 +5,14 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class DetailTopicPagerAdapter extends FragmentStateAdapter {
 
     private final int topicId;
     private final String token;
+    private Map<Integer, Fragment> fragmentMap = new HashMap<>();
 
     public DetailTopicPagerAdapter(@NonNull FragmentActivity fragmentActivity, int topicId, String token) {
         super(fragmentActivity);
@@ -19,11 +23,14 @@ public class DetailTopicPagerAdapter extends FragmentStateAdapter {
     @NonNull
     @Override
     public Fragment createFragment(int position) {
+        Fragment fragment;
         if (position == 0) {
-            return TopicNewsFragment.newInstance(topicId, token);
+            fragment = TopicNewsFragment.newInstance(topicId, token);
         } else {
-            return TopicCommentsFragment.newInstance(topicId, token);
+            fragment = TopicCommentsFragment.newInstance(topicId, token);
         }
+        fragmentMap.put(position, fragment);
+        return fragment;
     }
 
     @Override
@@ -31,8 +38,26 @@ public class DetailTopicPagerAdapter extends FragmentStateAdapter {
         return 2; // 两个tab：新闻和评论区
     }
 
+    /**
+     * 获取指定位置的Fragment
+     */
+    public Fragment getFragment(int position) {
+        return fragmentMap.get(position);
+    }
+
+    /**
+     * 移除Fragment引用
+     */
+    public void removeFragment(int position) {
+        fragmentMap.remove(position);
+    }
+
     public void refreshComments() {
         // 可以通过EventBus或其他方式通知Fragment刷新
         // 或者通过ViewModel来通知刷新
+        Fragment commentsFragment = getFragment(1);
+        if (commentsFragment instanceof TopicCommentsFragment) {
+            ((TopicCommentsFragment) commentsFragment).refreshComments();
+        }
     }
 }
