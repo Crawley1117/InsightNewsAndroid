@@ -20,6 +20,7 @@ version 0.1.5.2:重构了部分UI界面，修复少量BUG
 ### version 0.1.5.3 ###  
 重新设计了credibility界面，完善了history和credibility贴图，修复了部分恶性崩溃问题  
 
+version 0.1.5.4：修复评论的部分问题（包括时间更新、输入框弹出、用户信息实时更新），修复资料编辑部分问题
 # TODO LIST #
 
 夜间模式XML更新
