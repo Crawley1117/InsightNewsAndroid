@@ -33,6 +33,10 @@ public class DetailTopicViewModel extends ViewModel {
 
     private Context appContext;
 
+    public LiveData<NewsItem> getTopicDetail() {
+        return topicDetail;
+    }
+
     public LiveData<List<NewsItem>> getRelatedNews() {
         return relatedNews;
     }
@@ -124,7 +128,7 @@ public class DetailTopicViewModel extends ViewModel {
     }
 
     /**
-     * 添加评论
+     * 添加评论 - 修复myComment设置
      */
     public void addComment(int topicId, String comment) {
         Log.d(TAG, "addComment: topicId=" + topicId + ", comment=" + comment);
@@ -139,29 +143,30 @@ public class DetailTopicViewModel extends ViewModel {
             return;
         }
 
-        // 创建新评论
+        // 创建新评论 - 使用固定的时间戳
+        long currentTime = System.currentTimeMillis();
         Comment newComment = new Comment();
-        newComment.setId((int) System.currentTimeMillis()); // 使用时间戳作为临时ID
+        newComment.setId((int) currentTime); // 使用时间戳作为ID
         newComment.setUserId(getCurrentUserId());
         newComment.setUsername(getCurrentUsername());
         newComment.setUserImg(getCurrentUserAvatar());
         newComment.setComment(comment.trim());
-        newComment.setTimestamp(System.currentTimeMillis()); // 设置时间戳
-        newComment.setCreatedAt(getRelativeTime(System.currentTimeMillis())); // 设置相对时间
+        newComment.setTimestamp(currentTime); // 存储固定的时间戳
+        newComment.setCreatedAt(getRelativeTime(currentTime)); // 存储计算好的相对时间
         newComment.setLikeCount(0);
         newComment.setLike(false);
-        newComment.setMyComment(true);
+        newComment.setMyComment(true); // 只有新发布的评论才设置为true
         newComment.setChildren(new ArrayList<>());
 
         // 使用TopicManager保存评论
         TopicManager.getInstance(appContext).addCommentToTopic(topicId, newComment);
 
-        Log.d(TAG, "评论添加成功: topicId=" + topicId);
+        Log.d(TAG, "评论添加成功: topicId=" + topicId + ", 用户=" + newComment.getUsername() + ", myComment=" + newComment.isMyComment());
         commentSuccess.setValue(true);
     }
 
     /**
-     * 获取话题的评论列表
+     * 获取话题的评论列表 - 修复myComment判断
      */
     public List<Comment> getCommentsForTopic(int topicId) {
         Log.d(TAG, "getCommentsForTopic: topicId=" + topicId);
@@ -169,6 +174,23 @@ public class DetailTopicViewModel extends ViewModel {
         if (appContext != null) {
             List<Comment> comments = TopicManager.getInstance(appContext).getCommentsForTopic(topicId);
             Log.d(TAG, "获取到评论数量: " + (comments != null ? comments.size() : 0));
+
+            // 修复myComment字段：只有当前用户的评论才设置为true
+            if (comments != null) {
+                int currentUserId = getCurrentUserId();
+                for (Comment comment : comments) {
+                    boolean isMyComment = (comment.getUserId() == currentUserId);
+                    if (comment.isMyComment() != isMyComment) {
+                        comment.setMyComment(isMyComment);
+                    }
+
+                    Log.d(TAG, "评论ID=" + comment.getId() +
+                            ", 用户ID=" + comment.getUserId() +
+                            ", 当前用户ID=" + currentUserId +
+                            ", myComment=" + comment.isMyComment());
+                }
+            }
+
             return comments;
         }
         Log.e(TAG, "appContext为null，无法获取评论");
@@ -223,18 +245,15 @@ public class DetailTopicViewModel extends ViewModel {
     }
 
     /**
-     * 更新所有评论的相对时间
+     * 更新所有评论的相对时间显示
      */
     public void updateCommentsRelativeTime(int topicId) {
         Log.d(TAG, "updateCommentsRelativeTime: topicId=" + topicId);
 
         if (appContext != null) {
-            List<Comment> comments = getCommentsForTopic(topicId);
-            for (Comment comment : comments) {
-                String relativeTime = getRelativeTime(comment.getTimestamp());
-                comment.setCreatedAt(relativeTime);
-            }
-            Log.d(TAG, "评论相对时间更新完成");
+            // 使用TopicManager更新评论时间显示
+            TopicManager.getInstance(appContext).updateCommentsTimeDisplay(topicId);
+            Log.d(TAG, "评论时间显示更新完成");
         }
     }
 
