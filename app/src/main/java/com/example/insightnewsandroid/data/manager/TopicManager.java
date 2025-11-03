@@ -11,9 +11,12 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Type;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 public class TopicManager {
@@ -151,29 +154,32 @@ public class TopicManager {
 
     // 初始化话题1的评论
     private void initializeTopic1Comments(Topic topic) {
+        // 定义固定的时间戳（10月29日）
+        long oct29Time = 1698566400000L; // 2023-10-29 00:00:00
+
         Comment comment1 = new Comment();
         comment1.setId(2001);
-        comment1.setUserId(1);
+        comment1.setUserId(999); // 使用非当前用户的ID
         comment1.setUsername("电影爱好者");
         comment1.setUserImg("https://example.com/avatar1.jpg");
         comment1.setComment("期待这部电影很久了，希望不要被谣言影响！");
-        comment1.setTimestamp(System.currentTimeMillis() - 2 * 60 * 60 * 1000); // 2小时前
-        comment1.setCreatedAt("2小时前");
+        comment1.setTimestamp(oct29Time - 2 * 60 * 60 * 1000); // 10月29日2小时前
+        comment1.setCreatedAt(getRelativeTimeDisplay(oct29Time - 2 * 60 * 60 * 1000));
         comment1.setLikeCount(15);
         comment1.setLike(true);
-        comment1.setMyComment(false);
+        comment1.setMyComment(false); // 确保设置为false
 
         Comment comment2 = new Comment();
         comment2.setId(2002);
-        comment2.setUserId(2);
+        comment2.setUserId(998); // 使用非当前用户的ID
         comment2.setUsername("动画迷");
         comment2.setUserImg("https://example.com/avatar2.jpg");
         comment2.setComment("国产动画越来越好了，支持正版，抵制谣言！");
-        comment2.setTimestamp(System.currentTimeMillis() - 60 * 60 * 1000); // 1小时前
-        comment2.setCreatedAt("1小时前");
+        comment2.setTimestamp(oct29Time - 60 * 60 * 1000); // 10月29日1小时前
+        comment2.setCreatedAt(getRelativeTimeDisplay(oct29Time - 60 * 60 * 1000));
         comment2.setLikeCount(8);
         comment2.setLike(false);
-        comment2.setMyComment(false);
+        comment2.setMyComment(false); // 确保设置为false
 
         topic.addComment(comment1);
         topic.addComment(comment2);
@@ -192,17 +198,20 @@ public class TopicManager {
 
     // 初始化话题2的评论
     private void initializeTopic2Comments(Topic topic) {
+        // 定义固定的时间戳（10月29日）
+        long oct29Time = 1698566400000L; // 2023-10-29 00:00:00
+
         Comment comment = new Comment();
         comment.setId(2003);
-        comment.setUserId(3);
+        comment.setUserId(997); // 使用非当前用户的ID
         comment.setUsername("科技达人");
         comment.setUserImg("https://example.com/avatar3.jpg");
         comment.setComment("AI技术发展很快，但也要注意防范滥用。");
-        comment.setTimestamp(System.currentTimeMillis() - 3 * 60 * 60 * 1000); // 3小时前
-        comment.setCreatedAt("3小时前");
+        comment.setTimestamp(oct29Time); // 固定为10月29日
+        comment.setCreatedAt(getRelativeTimeDisplay(oct29Time));
         comment.setLikeCount(12);
         comment.setLike(true);
-        comment.setMyComment(false);
+        comment.setMyComment(false); // 确保设置为false
         topic.addComment(comment);
     }
 
@@ -239,6 +248,32 @@ public class TopicManager {
         topic.addNews(news);
     }
 
+    // 添加相对时间计算方法
+    private String getRelativeTimeDisplay(long timestamp) {
+        long now = System.currentTimeMillis();
+        long diff = now - timestamp;
+
+        if (diff < 0) {
+            return "刚刚";
+        }
+
+        if (diff < 60000) {
+            return "刚刚";
+        } else if (diff < 3600000) {
+            long minutes = diff / 60000;
+            return minutes + "分钟前";
+        } else if (diff < 86400000) {
+            long hours = diff / 3600000;
+            return hours + "小时前";
+        } else if (diff < 604800000) {
+            long days = diff / 86400000;
+            return days + "天前";
+        } else {
+            SimpleDateFormat sdf = new SimpleDateFormat("MM-dd HH:mm", Locale.getDefault());
+            return sdf.format(new Date(timestamp));
+        }
+    }
+
     // 公共方法
     public Topic getTopicById(int topicId) {
         return topicsMap.get(topicId);
@@ -261,9 +296,17 @@ public class TopicManager {
     public void addCommentToTopic(int topicId, Comment comment) {
         Topic topic = topicsMap.get(topicId);
         if (topic != null) {
+            // 确保评论的时间数据完整
+            if (comment.getTimestamp() == 0) {
+                comment.setTimestamp(System.currentTimeMillis());
+            }
+            if (comment.getCreatedAt() == null) {
+                comment.setCreatedAt(getRelativeTimeDisplay(comment.getTimestamp()));
+            }
+
             topic.addComment(comment);
             saveTopicsToStorage();
-            Log.d(TAG, "评论已添加到话题: " + topicId);
+            Log.d(TAG, "评论已添加到话题: " + topicId + ", 时间: " + comment.getCreatedAt());
         }
     }
 
@@ -291,7 +334,18 @@ public class TopicManager {
 
     public List<Comment> getCommentsForTopic(int topicId) {
         Topic topic = topicsMap.get(topicId);
-        return topic != null ? topic.getComments() : new ArrayList<>();
+        if (topic != null) {
+            List<Comment> comments = topic.getComments();
+            // 确保每条评论都有正确的时间显示
+            for (Comment comment : comments) {
+                String currentDisplay = getRelativeTimeDisplay(comment.getTimestamp());
+                if (!currentDisplay.equals(comment.getCreatedAt())) {
+                    comment.setCreatedAt(currentDisplay);
+                }
+            }
+            return comments;
+        }
+        return new ArrayList<>();
     }
 
     /**
@@ -338,5 +392,19 @@ public class TopicManager {
             }
         }
         return categories;
+    }
+
+    /**
+     * 更新评论时间显示（不修改存储的时间戳）
+     */
+    public void updateCommentsTimeDisplay(int topicId) {
+        Topic topic = topicsMap.get(topicId);
+        if (topic != null && topic.getComments() != null) {
+            for (Comment comment : topic.getComments()) {
+                String newDisplay = getRelativeTimeDisplay(comment.getTimestamp());
+                comment.setCreatedAt(newDisplay);
+            }
+            Log.d(TAG, "评论时间显示已更新: topicId=" + topicId);
+        }
     }
 }
