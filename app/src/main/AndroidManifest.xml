@@ -90,16 +90,11 @@
             android:exported="false"
             android:theme="@style/Theme.InsightNewsAndroid.NoActionBar" />
 
+        <!-- 新闻收藏页面 -->
         <activity
             android:name=".ui.profile.NewsCollectionActivity"
             android:exported="false"
             android:theme="@style/Theme.InsightNewsAndroid.NoActionBar" />
-
-        <!-- 收藏新闻搜索界面 -->
-        <activity
-            android:name=".ui.profile.NewsSearchActivity"
-            android:exported="false"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
 
         <!-- 话题详情页 -->
         <activity
@@ -112,7 +107,9 @@
         <!-- 话题收藏界面 -->
         <activity
             android:name=".ui.profile.TopicCollectionActivity"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+            android:exported="false"
+            android:theme="@style/Theme.InsightNewsAndroid.NoActionBar" />
+
     </application>
 
 </manifest>
