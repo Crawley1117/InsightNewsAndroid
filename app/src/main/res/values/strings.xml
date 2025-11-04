@@ -15,6 +15,9 @@
     <!-- 探索页面字符串 -->
     <string name="explore_title">探究真相</string>
     <string name="collect_description">收藏</string>
+    <string name="collect_success">收藏成功</string>
+    <string name="uncollect_success">已取消收藏</string>
+    <string name="collect_failed">收藏失败</string>
     <string name="search_description">搜索</string>
     <string name="truth_detective">真相侦探</string>
     <string name="bingjian_description">冰鉴</string>
