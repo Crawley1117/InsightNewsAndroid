@@ -14,6 +14,9 @@ public class NewsItem {
     private String topicTitle = "";
     private String topicCategory = "";
     private String content = "";
+    private boolean isCollected = false;
+    private String credibilityLevel; // 可信度等级：高、中、低
+    private String credibilityScore; // 可信度分数
 
     // 构造函数
     public NewsItem() {}
@@ -63,4 +66,22 @@ public class NewsItem {
 
     public String getContent() { return content; }
     public void setContent(String content) { this.content = content; }
+
+    public boolean isCollected() { return isCollected; }
+    public void setCollected(boolean collected) { isCollected = collected; }
+    public String getCredibilityLevel() {
+        return credibilityLevel;
+    }
+
+    public void setCredibilityLevel(String credibilityLevel) {
+        this.credibilityLevel = credibilityLevel;
+    }
+
+    public String getCredibilityScore() {
+        return credibilityScore;
+    }
+
+    public void setCredibilityScore(String credibilityScore) {
+        this.credibilityScore = credibilityScore;
+    }
 }
