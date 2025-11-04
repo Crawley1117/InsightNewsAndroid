@@ -128,30 +128,33 @@
                         <ImageButton
                             android:id="@+id/likeButton"
                             android:layout_width="24dp"
-                            android:layout_height="24dp"
+                            android:layout_height="match_parent"
                             android:background="?attr/selectableItemBackgroundBorderless"
                             android:contentDescription="@string/like"
-                            android:src="@drawable/ic_good"
-                            android:scaleType="fitCenter"/>
+                            android:scaleType="fitCenter"
+                            android:src="@drawable/ic_good" />
 
                         <ImageButton
                             android:id="@+id/dislikeButton"
                             android:layout_width="24dp"
-                            android:layout_height="24dp"
+                            android:layout_height="match_parent"
                             android:layout_marginStart="16dp"
                             android:background="?attr/selectableItemBackgroundBorderless"
                             android:contentDescription="@string/dislike"
-                            android:src="@drawable/ic_bad"
-                            android:scaleType="fitCenter"/>
+                            android:scaleType="fitCenter"
+                            android:src="@drawable/ic_bad" />
 
                         <ImageButton
                             android:id="@+id/starButton"
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
+                            android:layout_width="33dp"
+                            android:layout_height="match_parent"
                             android:layout_marginStart="16dp"
                             android:background="?attr/selectableItemBackgroundBorderless"
                             android:contentDescription="@string/star"
-                            android:src="@drawable/ic_star" />
+                            android:padding="4dp"
+                            android:scaleType="fitCenter"
+                            android:src="@drawable/ic_collect_unselected" />
+
                     </LinearLayout>
                 </LinearLayout>
 
