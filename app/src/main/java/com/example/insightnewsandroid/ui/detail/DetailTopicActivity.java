@@ -14,9 +14,9 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -27,6 +27,10 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.insightnewsandroid.R;
+import com.example.insightnewsandroid.data.manager.TopicCollectionManager;
+import com.example.insightnewsandroid.data.manager.TopicManager;
+import com.example.insightnewsandroid.data.model.NewsItem;
+import com.example.insightnewsandroid.data.model.Topic;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
@@ -40,7 +44,12 @@ public class DetailTopicActivity extends AppCompatActivity
     private EditText etCommentInput;
     private int topicId;
     private String token;
-    private int currentReplyCommentId = -1; // 添加回复评论ID
+    private int currentReplyCommentId = -1;
+
+    // 收藏相关变量
+    private ImageButton ivCollect;
+    private boolean isCollected = false;
+    private TopicCollectionManager collectionManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,6 +64,9 @@ public class DetailTopicActivity extends AppCompatActivity
 
         Log.d(TAG, "初始化详情页，topicId: " + topicId);
 
+        // 初始化收藏管理器
+        collectionManager = TopicCollectionManager.getInstance(this);
+
         initViews();
         initViewModel();
         setupCommentInput();
@@ -68,13 +80,92 @@ public class DetailTopicActivity extends AppCompatActivity
         // 设置返回按钮
         findViewById(R.id.toolbar).setOnClickListener(v -> finish());
 
-        // 设置收藏按钮 - 暂时移除收藏功能，因为ViewModel中没有对应方法
-        ImageButton ivCollect = findViewById(R.id.ivCollect);
+        // 初始化收藏按钮
+        ivCollect = findViewById(R.id.ivCollect);
         if (ivCollect != null) {
+            // 检查当前话题是否已收藏
+            checkCollectionStatus();
+
             ivCollect.setOnClickListener(v -> {
-                // 暂时显示提示，因为ViewModel中没有收藏方法
-                Toast.makeText(this, "收藏功能暂未实现", Toast.LENGTH_SHORT).show();
+                toggleTopicCollection();
             });
+        }
+    }
+
+    /**
+     * 检查收藏状态
+     */
+    private void checkCollectionStatus() {
+        if (topicId != -1 && collectionManager != null) {
+            isCollected = collectionManager.isTopicCollected(topicId);
+            updateCollectButton();
+            Log.d(TAG, "收藏状态检查: topicId=" + topicId + ", isCollected=" + isCollected);
+        }
+    }
+
+    /**
+     * 切换收藏状态
+     */
+    private void toggleTopicCollection() {
+        if (topicId == -1) {
+            Toast.makeText(this, "话题信息不完整", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (collectionManager == null) {
+            collectionManager = TopicCollectionManager.getInstance(this);
+        }
+
+        // 获取当前话题的完整信息
+        TopicManager topicManager = TopicManager.getInstance(this);
+        Topic currentTopic = topicManager.getTopicById(topicId);
+
+        if (currentTopic == null) {
+            Toast.makeText(this, "话题不存在", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        boolean success;
+        if (isCollected) {
+            // 取消收藏
+            success = collectionManager.removeFromCollection(topicId);
+            if (success) {
+                isCollected = false;
+                Toast.makeText(this, "已取消收藏", Toast.LENGTH_SHORT).show();
+                Log.d(TAG, "取消收藏成功: topicId=" + topicId);
+            }
+        } else {
+            // 添加收藏
+            success = collectionManager.addToCollection(currentTopic);
+            if (success) {
+                isCollected = true;
+                Toast.makeText(this, "收藏成功", Toast.LENGTH_SHORT).show();
+                Log.d(TAG, "收藏成功: topicId=" + topicId + ", title=" + currentTopic.getTitle());
+            }
+        }
+
+        if (success) {
+            updateCollectButton();
+        } else {
+            Toast.makeText(this, "操作失败，请重试", Toast.LENGTH_SHORT).show();
+            Log.e(TAG, "收藏操作失败: topicId=" + topicId);
+        }
+    }
+
+    /**
+     * 更新收藏按钮状态
+     */
+    private void updateCollectButton() {
+        if (ivCollect != null) {
+            if (isCollected) {
+                ivCollect.setImageResource(R.drawable.ic_topic_selected);
+                ivCollect.setContentDescription("已收藏");
+                Log.d(TAG, "更新收藏按钮状态: 已收藏");
+            } else {
+                ivCollect.setImageResource(R.drawable.ic_topic_unselected);
+                ivCollect.setContentDescription("收藏");
+                Log.d(TAG, "更新收藏按钮状态: 未收藏");
+            }
         }
     }
 
@@ -86,6 +177,13 @@ public class DetailTopicActivity extends AppCompatActivity
 
         // 设置上下文
         viewModel.setAppContext(this);
+
+        // 观察话题详情变化
+        viewModel.getTopicDetail().observe(this, topicDetail -> {
+            if (topicDetail != null) {
+                updateTopicUI(topicDetail);
+            }
+        });
 
         // 观察评论提交结果
         viewModel.getCommentSuccess().observe(this, success -> {
@@ -112,8 +210,47 @@ public class DetailTopicActivity extends AppCompatActivity
     }
 
     /**
-     * 设置评论输入框点击监听
+     * 更新话题UI
      */
+    private void updateTopicUI(NewsItem topicDetail) {
+        // 更新标题
+        TextView tvTitle = findViewById(R.id.tv_title);
+        if (tvTitle != null && topicDetail.getTitle() != null) {
+            tvTitle.setText(topicDetail.getTitle());
+        }
+
+        // 更新描述
+        TextView tvDescription = findViewById(R.id.tv_description);
+        if (tvDescription != null && topicDetail.getContent() != null) {
+            tvDescription.setText(topicDetail.getContent());
+        }
+
+        // 更新分类
+        TextView tvCategory = findViewById(R.id.tv_category);
+        if (tvCategory != null && topicDetail.getTopicCategory() != null) {
+            tvCategory.setText(topicDetail.getTopicCategory());
+        }
+
+        // 更新关注数
+        TextView tvFollowCount = findViewById(R.id.tv_follow_count);
+        if (tvFollowCount != null) {
+            String followText = topicDetail.getViewCount() + "人关注";
+            tvFollowCount.setText(followText);
+        }
+
+        // 更新头部图片
+        ImageView ivHeader = findViewById(R.id.iv_header);
+        if (ivHeader != null && topicDetail.getImageUrl() != null && !topicDetail.getImageUrl().isEmpty()) {
+            // 这里可以使用Glide或Picasso加载图片
+            // Glide.with(this).load(topicDetail.getImageUrl()).into(ivHeader);
+            Log.d(TAG, "话题图片URL: " + topicDetail.getImageUrl());
+        }
+
+        // 重新检查收藏状态（确保数据加载完成后更新）
+        checkCollectionStatus();
+    }
+
+    // 以下保持原有代码不变...
     private void setupCommentInput() {
         LinearLayout llCommentInput = findViewById(R.id.ll_comment_input);
         TextView tvCommentHint = findViewById(R.id.tv_comment_hint);
@@ -131,9 +268,6 @@ public class DetailTopicActivity extends AppCompatActivity
         }
     }
 
-    /**
-     * 设置 ViewPager
-     */
     private void setupViewPager() {
         ViewPager2 viewPager = findViewById(R.id.view_pager);
         TabLayout tabLayout = findViewById(R.id.tab_layout);
@@ -152,9 +286,6 @@ public class DetailTopicActivity extends AppCompatActivity
         }
     }
 
-    /**
-     * 显示评论输入对话框 - 添加 hint 和 commentId 参数
-     */
     public void showCommentInputDialog(String hint, int commentId) {
         this.currentReplyCommentId = commentId;
 
@@ -164,7 +295,6 @@ public class DetailTopicActivity extends AppCompatActivity
 
         commentDialog = builder.create();
 
-        // 设置对话框样式 - 底部显示
         Window window = commentDialog.getWindow();
         if (window != null) {
             window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
@@ -174,8 +304,6 @@ public class DetailTopicActivity extends AppCompatActivity
 
         initDialogViews(dialogView, hint);
         commentDialog.show();
-
-        // 自动弹出键盘
         showKeyboard();
     }
 
@@ -183,21 +311,18 @@ public class DetailTopicActivity extends AppCompatActivity
         etCommentInput = dialogView.findViewById(R.id.et_comment_input);
         ImageButton btnSend = dialogView.findViewById(R.id.btn_send);
 
-        // 发送按钮
         btnSend.setOnClickListener(v -> {
             String commentText = etCommentInput.getText().toString().trim();
             if (!commentText.isEmpty()) {
                 submitComment(commentText);
                 hideKeyboard();
                 commentDialog.dismiss();
-                // 重置回复状态
                 currentReplyCommentId = -1;
             } else {
                 Toast.makeText(this, "请输入评论内容", Toast.LENGTH_SHORT).show();
             }
         });
 
-        // 监听输入变化
         etCommentInput.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
@@ -206,15 +331,10 @@ public class DetailTopicActivity extends AppCompatActivity
             public void onTextChanged(CharSequence s, int start, int before, int count) {}
 
             @Override
-            public void afterTextChanged(Editable s) {
-                // 可以在这里添加字符计数等功能
-            }
+            public void afterTextChanged(Editable s) {}
         });
     }
 
-    /**
-     * 提交评论 - 使用ViewModel中的正确方法签名
-     */
     private void submitComment(String commentText) {
         if (viewModel != null) {
             viewModel.addComment(topicId, commentText);
@@ -224,9 +344,6 @@ public class DetailTopicActivity extends AppCompatActivity
         }
     }
 
-    /**
-     * 显示键盘
-     */
     private void showKeyboard() {
         if (etCommentInput != null) {
             etCommentInput.requestFocus();
@@ -239,9 +356,6 @@ public class DetailTopicActivity extends AppCompatActivity
         }
     }
 
-    /**
-     * 隐藏键盘
-     */
     private void hideKeyboard() {
         if (etCommentInput != null) {
             InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -251,14 +365,16 @@ public class DetailTopicActivity extends AppCompatActivity
         }
     }
 
-    /**
-     * 实现 TopicCommentsFragment 的回调接口
-     * 当在评论列表中点击回复时调用
-     */
     @Override
     public void onShowCommentInput(String hint, int commentId) {
-        // 当点击回复时，显示对话框
         showCommentInputDialog(hint, commentId);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // 当从其他页面返回时，重新检查收藏状态
+        checkCollectionStatus();
     }
 
     @Override
