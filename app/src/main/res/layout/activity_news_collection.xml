@@ -3,14 +3,14 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#FFFFFF">
+    android:background="@drawable/chat_background">
 
     <!-- 标题栏 - 紫色背景 -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="80dp"
         android:orientation="horizontal"
-        android:background="@drawable/header_background"
+        android:background="@drawable/up"
         android:gravity="center_vertical"
         android:paddingHorizontal="16dp"
         android:paddingTop="20dp">
