@@ -77,6 +77,8 @@ public class DetailTopicViewModel extends ViewModel {
                 topicItem.setTopicCategory(topic.getCategory());
                 topicItem.setViewCount(topic.getFollowCount());
                 topicItem.setImageUrl(topic.getImageUrl());
+
+                // 确保设置话题详情
                 topicDetail.setValue(topicItem);
 
                 // 增加浏览计数
