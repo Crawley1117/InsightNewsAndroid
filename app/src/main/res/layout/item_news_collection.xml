@@ -1,55 +1,91 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="120dp"
     android:orientation="vertical"
-    android:background="@drawable/news_item_background"
-    android:padding="16dp"
-    android:layout_marginBottom="12dp">
+    android:background="@drawable/bg_medium"
+    android:padding="12dp"
+    android:layout_marginStart="8dp"
+    android:layout_marginEnd="8dp"
+    android:layout_marginBottom="8dp">
 
     <!-- 新闻标题 -->
     <TextView
         android:id="@+id/tv_news_title"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="重大发现！科学家在'蓝光-X'星球上发现高等文明痕迹！"
-        android:textSize="16sp"
+        android:layout_height="22dp"
+        android:layout_weight="1"
+        android:ellipsize="end"
+        android:gravity="top"
+        android:maxLines="2"
+        android:text="新闻标题"
         android:textColor="#333333"
-        android:textStyle="bold"
-        android:lineSpacingExtra="4dp" />
+        android:textSize="16dp"
+        android:textStyle="bold" />
 
-    <!-- 新闻日期 -->
-    <TextView
-        android:id="@+id/tv_news_date"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="2025-02-13"
-        android:textSize="14sp"
-        android:textColor="#666666"
-        android:layout_marginTop="8dp" />
-
-    <!-- 操作按钮区域 -->
+    <!-- 日期和可信度在同一行 -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:gravity="end"
-        android:layout_marginTop="12dp">
+        android:gravity="center_vertical"
+        android:layout_marginTop="4dp">
+
+        <!-- 日期 - 在左边 -->
+        <TextView
+            android:id="@+id/tv_news_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="2025-02-13"
+            android:textSize="11sp"
+            android:textColor="#666666" />
+
+        <!-- 可信度标签 - 在右边，使用权重推到最右边 -->
+        <TextView
+            android:id="@+id/tv_credibility_tag"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="可信度中"
+            android:textSize="10sp"
+            android:textColor="#FFFFFF"
+            android:paddingHorizontal="6dp"
+            android:paddingVertical="2dp"
+            android:layout_marginStart="8dp"
+            android:layout_gravity="end"
+            android:background="#80000000" />
+
+    </LinearLayout>
+
+    <!-- 操作按钮区域 - 在下面 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="start"
+        android:layout_marginTop="6dp">
 
         <!-- 点赞按钮 -->
         <ImageView
             android:id="@+id/iv_like"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
             android:src="@drawable/ic_thumb_up"
-            android:layout_marginEnd="16dp" />
+            android:layout_marginEnd="10dp" />
 
         <!-- 拉踩按钮 -->
         <ImageView
             android:id="@+id/iv_dislike"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:src="@drawable/ic_thumb_down" />
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:src="@drawable/ic_thumb_down"
+            android:layout_marginEnd="10dp" />
+
+        <!-- 收藏按钮 -->
+        <ImageView
+            android:id="@+id/iv_collect"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:src="@drawable/ic_collect_unselected" />
 
     </LinearLayout>
 
