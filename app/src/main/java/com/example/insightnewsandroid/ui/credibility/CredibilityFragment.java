@@ -27,6 +27,8 @@ import com.example.insightnewsandroid.db.DetectionRecordEntity;
 import com.example.insightnewsandroid.db.SuspiciousSpan;
 import com.example.insightnewsandroid.EnhancedReportActivity;
 import com.example.insightnewsandroid.HistoryActivity;
+import com.example.insightnewsandroid.data.model.NewsItem;
+import com.example.insightnewsandroid.data.UserProfileManager;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -53,6 +55,10 @@ public class CredibilityFragment extends Fragment {
     private String currentFullText = null;
     private String currentSuspiciousSpansJson = null;
     private String currentCredibilityLevel = null;
+    // --- 新增结束 ---
+
+    // --- 新增：收藏状态相关 ---
+    private boolean isCurrentNewsCollected = false;
     // --- 新增结束 ---
 
     @Override
@@ -233,6 +239,10 @@ public class CredibilityFragment extends Fragment {
         // 观察聊天消息列表 (根据你的 ViewModel)
         viewModel.getChatMessages().observe(getViewLifecycleOwner(), chatMessages -> {
             if (chatMessages != null && !chatMessages.isEmpty()) {
+                // --- 新增：更新收藏按钮状态 ---
+                updateStarButtonState();
+                // --- 新增结束 ---
+
                 // 获取最新的 AI 消息（包含评估结果）
                 ChatMessage lastAiMessage = null;
                 String originalUserInput = null; // 用于存储原始用户输入
@@ -272,6 +282,11 @@ public class CredibilityFragment extends Fragment {
             } else {
                 // 如果消息列表为空，不隐藏，因为可能要显示历史记录
                 // hideAssessmentResult(); // 如果你想在完全没有消息时隐藏，可以调用
+
+                // --- 新增：没有消息时重置收藏按钮 ---
+                binding.starButton.setImageResource(R.drawable.ic_collect_unselected);
+                isCurrentNewsCollected = false;
+                // --- 新增结束 ---
             }
         });
     }
@@ -281,7 +296,7 @@ public class CredibilityFragment extends Fragment {
         // binding.clockButton.setOnClickListener(v -> { ... });
         // --- 移除结束 ---
 
-        // 输入框右侧的“+”按钮
+        // 输入框右侧的"+"按钮
         binding.addButton.setOnClickListener(v -> {
             String inputText = binding.newsInput.getText().toString().trim();
             if (!inputText.isEmpty()) {
@@ -295,7 +310,7 @@ public class CredibilityFragment extends Fragment {
             }
         });
 
-        // “查看详细分析报告”按钮
+        // "查看详细分析报告"按钮
         binding.reportButton.setOnClickListener(v -> {
             // 获取当前评估结果
             List<ChatMessage> messages = viewModel.getChatMessages().getValue();
@@ -389,10 +404,105 @@ public class CredibilityFragment extends Fragment {
             Toast.makeText(requireContext(), "已点踩", Toast.LENGTH_SHORT).show();
         });
 
+        // 在 CredibilityFragment.java 的收藏按钮点击事件中
         binding.starButton.setOnClickListener(v -> {
-            Toast.makeText(requireContext(), "已收藏", Toast.LENGTH_SHORT).show();
+            List<ChatMessage> messages = viewModel.getChatMessages().getValue();
+            if (messages != null && !messages.isEmpty()) {
+                // 获取最新的用户输入（新闻内容）
+                String newsContent = "";
+                for (int i = messages.size() - 1; i >= 0; i--) {
+                    ChatMessage msg = messages.get(i);
+                    if (msg.getType() == ChatMessage.Type.USER && msg.getText() != null && !msg.getText().isEmpty()) {
+                        newsContent = msg.getText();
+                        break;
+                    }
+                }
+
+                if (!newsContent.isEmpty()) {
+                    // 创建新闻ID（基于内容生成，确保相同内容有相同ID）
+                    String newsId = String.valueOf(newsContent.hashCode());
+
+                    // 检查是否已经收藏
+                    boolean isCollected = UserProfileManager.INSTANCE.isNewsCollected(requireContext(), newsId);
+
+                    if (isCollected) {
+                        // 如果已经收藏，取消收藏
+                        UserProfileManager.INSTANCE.removeNewsFromCollection(requireContext(), newsId);
+                        binding.starButton.setImageResource(R.drawable.ic_collect_unselected);
+                        Toast.makeText(requireContext(), "已取消收藏", Toast.LENGTH_SHORT).show();
+                        isCurrentNewsCollected = false;
+                    } else {
+                        // 如果未收藏，添加收藏
+                        NewsItem newsItem = new NewsItem();
+                        newsItem.setId(newsId);
+                        String title = newsContent.length() > 50 ? newsContent.substring(0, 50) + "..." : newsContent;
+                        newsItem.setTitle(title);
+                        newsItem.setDate(new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date()));
+                        newsItem.setContent(newsContent);
+                        newsItem.setCollected(true);
+
+                        // 设置与新闻检测界面相同的字段
+                        newsItem.setViewCount(0);
+                        newsItem.setLikeCount(0);
+                        newsItem.setCommentCount(0);
+                        newsItem.setLiked(false);
+                        newsItem.setDisliked(false);
+                        newsItem.setTopicId(0);
+                        newsItem.setTopicTitle("可信度检测");
+                        newsItem.setTopicCategory("检测结果");
+
+                        // 设置可信度信息
+                        newsItem.setCredibilityLevel(currentCredibilityLevel);
+                        int score = -1;
+                        switch (currentCredibilityLevel) {
+                            case "高": score = 90; break;
+                            case "较高": score = 80; break;
+                            case "中": score = 60; break;
+                            case "较低": score = 40; break;
+                            case "低": score = 20; break;
+                        }
+                        if (score != -1) {
+                            newsItem.setCredibilityScore(score + "%");
+                        }
+
+                        UserProfileManager.INSTANCE.addNewsToCollection(requireContext(), newsItem);
+                        binding.starButton.setImageResource(R.drawable.ic_collect_selected);
+                        Toast.makeText(requireContext(), "已收藏到新闻收藏", Toast.LENGTH_SHORT).show();
+                        isCurrentNewsCollected = true;
+                    }
+                } else {
+                    Toast.makeText(requireContext(), "暂无新闻内容可收藏", Toast.LENGTH_SHORT).show();
+                }
+            } else {
+                Toast.makeText(requireContext(), "暂无新闻内容可收藏", Toast.LENGTH_SHORT).show();
+            }
         });
     }
+
+    // --- 新增：更新收藏按钮状态的方法 ---
+    private void updateStarButtonState() {
+        List<ChatMessage> messages = viewModel.getChatMessages().getValue();
+        if (messages != null && !messages.isEmpty()) {
+            String newsContent = "";
+            for (int i = messages.size() - 1; i >= 0; i--) {
+                ChatMessage msg = messages.get(i);
+                if (msg.getType() == ChatMessage.Type.USER && msg.getText() != null && !msg.getText().isEmpty()) {
+                    newsContent = msg.getText();
+                    break;
+                }
+            }
+
+            if (!newsContent.isEmpty()) {
+                String newsId = String.valueOf(newsContent.hashCode());
+                boolean isCollected = UserProfileManager.INSTANCE.isNewsCollected(requireContext(), newsId);
+                binding.starButton.setImageResource(
+                        isCollected ? R.drawable.ic_collect_selected : R.drawable.ic_collect_unselected
+                );
+                isCurrentNewsCollected = isCollected;
+            }
+        }
+    }
+    // --- 新增结束 ---
 
     // 显示评估结果到 UI 卡片
     // 参数 originalNewsContent: 用户输入的原始新闻内容
