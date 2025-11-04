@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@drawable/chat_background">
+    android:background="@drawable/bg_login">
 
     <!-- 顶部标题栏 - 按照编辑资料页面的样式 -->
     <LinearLayout
