@@ -21,8 +21,9 @@ version 0.1.5.4：修复评论的部分问题（包括时间更新、输入框�
 修复了credibility界面显示严重扭曲的问题，优化了credibility history enhancedReport页面的布局;   
 修复了history对应数据库空搜索导致崩溃的问题；现在credibility默认显示最新的history记录  
 
+version 0.1.5.6：修复昨天存留的问题
 # TODO LIST #
-
+新闻收藏功能
 注册登陆界面的返回按钮
 夜间模式XML更新
 接入请求接口
