@@ -1,4 +1,3 @@
-// LoginActivity.java
 package com.example.insightnewsandroid.auth;
 
 import android.content.Intent;
@@ -22,18 +21,15 @@ public class LoginActivity extends AppCompatActivity {
 
     private AuthRepository authRepo;
     private ActivityLoginBinding binding;
-    private CountDownTimer countDownTimer; // 添加倒计时器成员变量
+    private CountDownTimer countDownTimer;
 
-    // --- 添加网络相关常量 ---
-    private static final String BASE_URL = "http://116.62.221.163:8087"; // 替换为你的后端基础URL
-    private static final String AUTH_TOKEN = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOiIxODk2MDkzNTUwMCJ9.JV85gnurhGUCeK7D_DnG3NHznpABmSqtse3oNw1RDoc"; // 注意：硬编码令牌不安全！
-    private static final OkHttpClient client = new OkHttpClient();
-    // --- 添加网络相关常量 ---
+    // 网络相关常量
+    private static final String BASE_URL = "http://116.62.221.163:8087";
+    // 用于获取验证码的预认证 Token
+    private static final String PRE_AUTH_TOKEN = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOiIxODk2MDkzNTUwMCJ9.JV85gnurhGUCeK7D_DnG3NHznpABmSqtse3oNw1RDoc";
 
-    // --- 定义调试用的验证码 ---
-    private static final String DEBUG_CODE = "041122";
-    // --- 定义调试用的验证码 ---
-
+    // 调试用密码
+    private static final String DEBUG_PASSWORD = "1117";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,39 +53,38 @@ public class LoginActivity extends AppCompatActivity {
         });
 
         binding.btnGetCode.setOnClickListener(v -> {
-            String phone = binding.editPhone.getText().toString().trim(); // 添加 trim()
-            if (!isValidPhoneNumber(phone)) { // 使用更健壮的验证
+            String phone = binding.editPhone.getText().toString().trim();
+            if (!isValidPhoneNumber(phone)) {
                 Toast.makeText(this, "请输入有效的11位手机号", Toast.LENGTH_SHORT).show();
                 return;
             }
-            sendVerificationCode(phone); // 调用发送验证码的方法
+            sendVerificationCode(phone);
         });
 
         binding.btnLogin.setOnClickListener(v -> {
-            String phone = binding.editPhone.getText().toString().trim(); // 添加 trim()
-            String codeOrPass = binding.editCodeOrPassword.getText().toString().trim(); // 添加 trim()
+            String phone = binding.editPhone.getText().toString().trim();
+            String codeOrPass = binding.editCodeOrPassword.getText().toString().trim();
             if (!isValidPhoneNumber(phone) || codeOrPass.isEmpty()) {
                 Toast.makeText(this, "请填写完整信息", Toast.LENGTH_SHORT).show();
                 return;
             }
 
             if (binding.radioCode.isChecked()) {
-                // --- 使用验证码登录 ---
-                // --- 检查是否为调试验证码 ---
-                if (DEBUG_CODE.equals(codeOrPass)) {
-                    // 是调试验证码，直接登录成功
-                    Toast.makeText(this, "调试模式登录成功", Toast.LENGTH_SHORT).show();
-                    authRepo.setLoggedIn(phone); // 使用输入的手机号设置登录状态
+                // 验证码登录
+                verifyCodeAndLogin(phone, codeOrPass);
+            } else {
+                // 密码登录
+                if (DEBUG_PASSWORD.equals(codeOrPass)) {
+                    // 调试模式密码登录
+                    Toast.makeText(this, "调试模式密码登录成功", Toast.LENGTH_SHORT).show();
+                    authRepo.setLoggedIn(phone, "debug_token_placeholder");
                     startActivity(new Intent(this, MainActivity.class));
                     finish();
-                    return; // 直接返回，不执行下面的网络请求
+                    return;
                 }
-                // --- 检查是否为调试验证码 ---
-                verifyCodeAndLogin(phone, codeOrPass); // 调用验证码登录方法 (非调试验证码)
-            } else {
-                // --- 使用密码登录 (模拟，你需要实现后端密码登录接口) ---
+                // 正常密码登录流程 (当前为模拟，需后端实现)
                 // 模拟登录成功 (临时)
-                authRepo.setLoggedIn(phone);
+                authRepo.setLoggedIn(phone, "password_login_placeholder");
                 Toast.makeText(this, "密码登录（模拟）", Toast.LENGTH_SHORT).show();
                 startActivity(new Intent(this, MainActivity.class));
                 finish();
@@ -97,17 +92,15 @@ public class LoginActivity extends AppCompatActivity {
         });
     }
 
-    // --- 新增：发送验证码方法 (更新解析逻辑) ---
     private void sendVerificationCode(String phone) {
-        // --- 发送网络请求 ---
         HttpUrl.Builder urlBuilder = HttpUrl.parse(BASE_URL + "/common/code").newBuilder();
         urlBuilder.addQueryParameter("phone", phone);
         String url = urlBuilder.build().toString();
 
         Request request = new Request.Builder()
                 .url(url)
-                .post(RequestBody.create("", MediaType.get("application/json"))) // 发送空的 POST 请求体
-                .addHeader("Authorization", "Bearer " + AUTH_TOKEN) // **重要**：根据后端要求调整认证方式
+                .post(RequestBody.create("", MediaType.get("application/json")))
+                .addHeader("Authorization", PRE_AUTH_TOKEN) // 发送验证码时需要预认证 Token
                 .build();
 
         client.newCall(request).enqueue(new Callback() {
@@ -115,11 +108,7 @@ public class LoginActivity extends AppCompatActivity {
             public void onFailure(Call call, IOException e) {
                 runOnUiThread(() -> {
                     Toast.makeText(LoginActivity.this, "发送失败: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                    if (countDownTimer != null) {
-                        countDownTimer.cancel(); // 如果请求失败，确保倒计时停止
-                        binding.btnGetCode.setEnabled(true);
-                        binding.btnGetCode.setText("获取验证码");
-                    }
+                    resetGetCodeButton();
                 });
             }
 
@@ -130,52 +119,30 @@ public class LoginActivity extends AppCompatActivity {
 
                 runOnUiThread(() -> {
                     if (success) {
-                        // --- 解析服务器响应 (根据统一格式: code, msg, data) ---
                         try {
                             JSONObject json = new JSONObject(responseBody);
-                            int code = json.getInt("code"); // 例如: 200
-                            String message = json.getString("msg"); // <--- 修改：使用 "msg" 字段
-                            // String data = json.getString("data"); // 如果需要，也可以获取 data 字段
-                            if (code == 200) { // 假设 200 表示成功
+                            int code = json.getInt("code");
+                            String message = json.getString("msg");
+                            if (code == 200) {
                                 Toast.makeText(LoginActivity.this, "验证码已发送", Toast.LENGTH_SHORT).show();
-                                startCountDown(); // 启动倒计时
+                                startCountDown();
                             } else {
                                 Toast.makeText(LoginActivity.this, "发送失败: " + message, Toast.LENGTH_SHORT).show();
-                                // 发送失败，可能也需要重置按钮状态
-                                if (countDownTimer != null) {
-                                    countDownTimer.cancel();
-                                }
-                                binding.btnGetCode.setEnabled(true);
-                                binding.btnGetCode.setText("获取验证码");
+                                resetGetCodeButton();
                             }
                         } catch (JSONException e) {
-                            // 如果响应不是 JSON 或格式不正确
                             Toast.makeText(LoginActivity.this, "发送失败: 服务器响应格式错误", Toast.LENGTH_SHORT).show();
-                            // 解析失败，可能也需要重置按钮状态
-                            if (countDownTimer != null) {
-                                countDownTimer.cancel();
-                            }
-                            binding.btnGetCode.setEnabled(true);
-                            binding.btnGetCode.setText("获取验证码");
+                            resetGetCodeButton();
                         }
-                        // --- 解析服务器响应 (根据统一格式: code, msg, data) ---
                     } else {
                         Toast.makeText(LoginActivity.this, "发送失败: " + response.code() + " " + responseBody, Toast.LENGTH_SHORT).show();
-                        // 请求失败，可能也需要重置按钮状态
-                        if (countDownTimer != null) {
-                            countDownTimer.cancel();
-                        }
-                        binding.btnGetCode.setEnabled(true);
-                        binding.btnGetCode.setText("获取验证码");
+                        resetGetCodeButton();
                     }
                 });
             }
         });
-        // --- 发送网络请求 ---
     }
-    // --- 新增：发送验证码方法 (更新解析逻辑) ---
 
-    // --- 新增：启动倒计时方法 ---
     private void startCountDown() {
         binding.btnGetCode.setEnabled(false);
         countDownTimer = new CountDownTimer(60000, 1000) {
@@ -191,17 +158,8 @@ public class LoginActivity extends AppCompatActivity {
             }
         }.start();
     }
-    // --- 新增：启动倒计时方法 ---
 
-    // --- 新增：验证码登录方法 (更新解析逻辑) ---
     private void verifyCodeAndLogin(String phone, String code) {
-        // 后端接口: POST http://116.62.221.163:8087/user/register
-        // Headers:
-        //   Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOiIxODk2MDkzNTUwMCJ9.JV85gnurhGUCeK7D_DnG3NHznpABmSqtse3oNw1RDoc
-        //   Content-Type: application/json
-        // Body (JSON):
-        //   {"phone": "实际手机号", "code": "实际验证码"}
-
         MediaType JSON = MediaType.get("application/json; charset=utf-8");
         JSONObject jsonBody = new JSONObject();
         try {
@@ -214,11 +172,11 @@ public class LoginActivity extends AppCompatActivity {
         }
         RequestBody body = RequestBody.create(jsonBody.toString(), JSON);
 
+        // 登录接口不需要 Authorization header
         Request request = new Request.Builder()
-                .url(BASE_URL + "/user/register") // **关键修改**: 使用正确的注册/登录接口URL (注意：这个接口同时用于注册和登录)
+                .url(BASE_URL + "/user/login") // 请根据你的后端实际接口修改此URL
                 .post(body)
-                .addHeader("Content-Type", "application/json") // **关键修改**: 添加 Content-Type 头
-                .addHeader("Authorization", "Bearer " + AUTH_TOKEN) // **关键修改**: 添加 Authorization 头
+                .addHeader("Content-Type", "application/json")
                 .build();
 
         client.newCall(request).enqueue(new Callback() {
@@ -236,33 +194,25 @@ public class LoginActivity extends AppCompatActivity {
 
                 runOnUiThread(() -> {
                     if (success) {
-                        // --- 解析登录结果 (根据新格式) ---
                         try {
                             JSONObject json = new JSONObject(responseBody);
-                            int serverCode = json.getInt("code"); // 例如: 200
-                            String message = json.getString("msg"); // 例如: "操作成功"
-                            String token = json.getString("data"); // 例如: "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
+                            int serverCode = json.getInt("code");
+                            String message = json.getString("msg");
+                            String token = json.optString("data", "");
 
-                            if (serverCode == 200) { // 假设 200 表示登录成功
-                                // 登录成功，保存登录状态
-                                // 注意：这里假设 token 本身不包含用户手机号信息，AuthRepository 仍然使用手机号作为标识
-                                // 如果 token 包含用户ID，你可能需要解析 token 或在登录成功后获取用户信息
-                                authRepo.setLoggedIn(phone); // 依然使用手机号设置登录状态
-                                // (可选) 你可能需要在 AuthRepository 或其他地方存储这个 token，用于后续需要认证的 API 调用
-                                Toast.makeText(LoginActivity.this, message, Toast.LENGTH_SHORT).show(); // 显示 "操作成功"
+                            if (serverCode == 200 && !token.isEmpty()) {
+                                // 登录成功，保存用户ID和Token
+                                authRepo.setLoggedIn(phone, token);
+                                Toast.makeText(LoginActivity.this, message, Toast.LENGTH_SHORT).show();
 
-                                // 跳转到主界面
                                 startActivity(new Intent(LoginActivity.this, MainActivity.class));
                                 finish();
                             } else {
-                                // 登录失败
-                                Toast.makeText(LoginActivity.this, message, Toast.LENGTH_SHORT).show(); // 显示具体失败原因
+                                Toast.makeText(LoginActivity.this, message, Toast.LENGTH_SHORT).show();
                             }
                         } catch (JSONException e) {
-                            // 如果响应不是 JSON 或格式不正确
                             Toast.makeText(LoginActivity.this, "登录失败: 服务器响应格式错误", Toast.LENGTH_SHORT).show();
                         }
-                        // --- 解析登录结果 (根据新格式) ---
                     } else {
                         Toast.makeText(LoginActivity.this, "登录失败: " + response.code() + " " + responseBody, Toast.LENGTH_SHORT).show();
                     }
@@ -270,16 +220,18 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
     }
-    // --- 新增：验证码登录方法 (更新解析逻辑) ---
 
-
-    // --- 使用更健壮的手机号验证 ---
     private boolean isValidPhoneNumber(String phone) {
-        // 简单的11位数字验证，实际应用中可能需要更复杂的正则
         return phone.matches("^1[3-9]\\d{9}$");
     }
-    // --- 使用更健壮的手机号验证 ---
 
+    private void resetGetCodeButton() {
+        if (countDownTimer != null) {
+            countDownTimer.cancel();
+        }
+        binding.btnGetCode.setEnabled(true);
+        binding.btnGetCode.setText("获取验证码");
+    }
 
     @Override
     protected void onDestroy() {
@@ -287,6 +239,7 @@ public class LoginActivity extends AppCompatActivity {
         if (countDownTimer != null) {
             countDownTimer.cancel();
         }
-        // binding 不是成员变量，不需要在这里设为 null
     }
+
+    private static final OkHttpClient client = new OkHttpClient();
 }

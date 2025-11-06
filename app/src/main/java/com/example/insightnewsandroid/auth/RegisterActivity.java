@@ -1,4 +1,3 @@
-// RegisterActivity.java
 package com.example.insightnewsandroid.auth;
 
 import android.content.Intent;
@@ -21,11 +20,10 @@ public class RegisterActivity extends AppCompatActivity {
     private ActivityRegisterBinding binding;
     private CountDownTimer countDownTimer;
 
-    // --- 添加网络相关常量 ---
-    private static final String BASE_URL = "http://116.62.221.163:8087"; // 替换为你的后端基础URL
-    private static final String AUTH_TOKEN = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOiIxODk2MDkzNTUwMCJ9.JV85gnurhGUCeK7D_DnG3NHznpABmSqtse3oNw1RDoc"; // 注意：硬编码令牌不安全！
-    private static final OkHttpClient client = new OkHttpClient();
-    // --- 添加网络相关常量 ---
+    // 网络相关常量
+    private static final String BASE_URL = "http://116.62.221.163:8087";
+    // 用于获取验证码的预认证 Token
+    private static final String PRE_AUTH_TOKEN = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOiIxODk2MDkzNTUwMCJ9.JV85gnurhGUCeK7D_DnG3NHznpABmSqtse3oNw1RDoc";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,20 +45,19 @@ public class RegisterActivity extends AppCompatActivity {
 
     private void sendVerificationCode() {
         String phone = binding.editPhone.getText().toString().trim();
-        if (!isValidPhoneNumber(phone)) { // 使用更健壮的验证
+        if (!isValidPhoneNumber(phone)) {
             Toast.makeText(this, "请输入有效的11位手机号", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // --- 发送网络请求 ---
         HttpUrl.Builder urlBuilder = HttpUrl.parse(BASE_URL + "/common/code").newBuilder();
         urlBuilder.addQueryParameter("phone", phone);
         String url = urlBuilder.build().toString();
 
         Request request = new Request.Builder()
                 .url(url)
-                .post(RequestBody.create("", MediaType.get("application/json"))) // 发送空的 POST 请求体
-                .addHeader("Authorization", "Bearer " + AUTH_TOKEN) // **重要**：根据后端要求调整认证方式
+                .post(RequestBody.create("", MediaType.get("application/json")))
+                .addHeader("Authorization", PRE_AUTH_TOKEN) // 发送验证码时需要预认证 Token
                 .build();
 
         client.newCall(request).enqueue(new Callback() {
@@ -79,30 +76,25 @@ public class RegisterActivity extends AppCompatActivity {
 
                 runOnUiThread(() -> {
                     if (success) {
-                        // --- 解析服务器响应 (根据统一格式: code, msg, data) ---
                         try {
                             JSONObject json = new JSONObject(responseBody);
-                            int code = json.getInt("code"); // 例如: 200
-                            String message = json.getString("msg"); // <--- 修改：使用 "msg" 字段
-                            // String data = json.getString("data"); // 如果需要，也可以获取 data 字段
-                            if (code == 200) { // 假设 200 表示成功
+                            int code = json.getInt("code");
+                            String message = json.getString("msg");
+                            if (code == 200) {
                                 Toast.makeText(RegisterActivity.this, "验证码已发送", Toast.LENGTH_SHORT).show();
                                 startCountDown();
                             } else {
                                 Toast.makeText(RegisterActivity.this, "发送失败: " + message, Toast.LENGTH_SHORT).show();
                             }
                         } catch (JSONException e) {
-                            // 如果响应不是 JSON 或格式不正确
                             Toast.makeText(RegisterActivity.this, "发送失败: 服务器响应格式错误", Toast.LENGTH_SHORT).show();
                         }
-                        // --- 解析服务器响应 (根据统一格式: code, msg, data) ---
                     } else {
                         Toast.makeText(RegisterActivity.this, "发送失败: " + response.code() + " " + responseBody, Toast.LENGTH_SHORT).show();
                     }
                 });
             }
         });
-        // --- 发送网络请求 ---
     }
 
     private void startCountDown() {
@@ -134,20 +126,10 @@ public class RegisterActivity extends AppCompatActivity {
             return;
         }
 
-        // --- 调用后端注册接口 (验证手机号和验证码) ---
         verifyCodeAndRegister(phone, code);
-        // --- 调用后端注册接口 (验证手机号和验证码) ---
     }
 
-    // --- 修改此方法以匹配后端 /user/register 接口的新返回格式 ---
     private void verifyCodeAndRegister(String phone, String code) {
-        // 后端接口: POST http://116.62.221.163:8087/user/register
-        // Headers:
-        //   Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOiIxODk2MDkzNTUwMCJ9.JV85gnurhGUCeK7D_DnG3NHznpABmSqtse3oNw1RDoc
-        //   Content-Type: application/json
-        // Body (JSON):
-        //   {"phone": "实际手机号", "code": "实际验证码"}
-
         MediaType JSON = MediaType.get("application/json; charset=utf-8");
         JSONObject jsonBody = new JSONObject();
         try {
@@ -160,11 +142,11 @@ public class RegisterActivity extends AppCompatActivity {
         }
         RequestBody body = RequestBody.create(jsonBody.toString(), JSON);
 
+        // 注册接口不需要 Authorization header
         Request request = new Request.Builder()
-                .url(BASE_URL + "/user/register") // **关键修改**: 使用正确的注册接口URL
+                .url(BASE_URL + "/user/register")
                 .post(body)
-                .addHeader("Content-Type", "application/json") // **关键修改**: 添加 Content-Type 头
-                .addHeader("Authorization", "Bearer " + AUTH_TOKEN) // **关键修改**: 添加 Authorization 头
+                .addHeader("Content-Type", "application/json")
                 .build();
 
         client.newCall(request).enqueue(new Callback() {
@@ -178,40 +160,29 @@ public class RegisterActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 String responseBody = response.body().string();
-
-                // android.util.Log.d("SendCode", "Raw Response: " + responseBody); // 可选：用于调试
-
                 boolean success = response.isSuccessful();
 
                 runOnUiThread(() -> {
                     if (success) {
-                        // --- 解析注册结果 (根据新格式) ---
                         try {
                             JSONObject json = new JSONObject(responseBody);
-                            int serverCode = json.getInt("code"); // 例如: 200
-                            String message = json.getString("msg"); // 例如: "操作成功"
-                            String token = json.getString("data"); // 例如: "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
+                            int serverCode = json.getInt("code");
+                            String message = json.getString("msg");
+                            String token = json.optString("data", ""); // 使用 optString 避免 JSONException
 
-                            if (serverCode == 200) { // 假设 200 表示注册/登录成功
-                                // 注册/登录成功，保存登录状态
-                                // 注意：这里假设 token 本身不包含用户手机号信息，AuthRepository 仍然使用手机号作为标识
-                                // 如果 token 包含用户ID，你可能需要解析 token 或在注册成功后获取用户信息
-                                authRepo.setLoggedIn(phone); // 依然使用手机号设置登录状态
-                                // (可选) 你可能需要在 AuthRepository 或其他地方存储这个 token，用于后续需要认证的 API 调用
-                                Toast.makeText(RegisterActivity.this, message, Toast.LENGTH_SHORT).show(); // 显示 "操作成功"
+                            if (serverCode == 200 && !token.isEmpty()) {
+                                // 注册成功，保存用户ID和Token
+                                authRepo.setLoggedIn(phone, token); // 关键改进：存储Token
+                                Toast.makeText(RegisterActivity.this, message, Toast.LENGTH_SHORT).show();
 
-                                // 跳转到主界面
                                 startActivity(new Intent(RegisterActivity.this, MainActivity.class));
                                 finish();
                             } else {
-                                // 注册/登录失败
-                                Toast.makeText(RegisterActivity.this, message, Toast.LENGTH_SHORT).show(); // 显示具体失败原因
+                                Toast.makeText(RegisterActivity.this, message, Toast.LENGTH_SHORT).show();
                             }
                         } catch (JSONException e) {
-                            // 如果响应不是 JSON 或格式不正确
                             Toast.makeText(RegisterActivity.this, "注册失败: 服务器响应格式错误", Toast.LENGTH_SHORT).show();
                         }
-                        // --- 解析注册结果 (根据新格式) ---
                     } else {
                         Toast.makeText(RegisterActivity.this, "注册失败: " + response.code() + " " + responseBody, Toast.LENGTH_SHORT).show();
                     }
@@ -219,16 +190,10 @@ public class RegisterActivity extends AppCompatActivity {
             }
         });
     }
-    // --- 修改此方法以匹配后端 /user/register 接口的新返回格式 ---
 
-
-    // --- 使用更健壮的手机号验证 ---
     private boolean isValidPhoneNumber(String phone) {
-        // 简单的11位数字验证，实际应用中可能需要更复杂的正则
         return phone.matches("^1[3-9]\\d{9}$");
     }
-    // --- 使用更健壮的手机号验证 ---
-
 
     @Override
     protected void onDestroy() {
@@ -236,6 +201,8 @@ public class RegisterActivity extends AppCompatActivity {
         if (countDownTimer != null) {
             countDownTimer.cancel();
         }
-        binding = null;
+        // binding 不是成员变量，不需要在这里设为 null
     }
+
+    private static final OkHttpClient client = new OkHttpClient();
 }
