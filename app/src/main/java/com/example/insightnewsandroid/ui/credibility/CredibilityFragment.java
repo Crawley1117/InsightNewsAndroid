@@ -3,9 +3,12 @@
 package com.example.insightnewsandroid.ui.credibility;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.provider.MediaStore;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -14,9 +17,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
@@ -33,6 +39,8 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Type;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -61,6 +69,12 @@ public class CredibilityFragment extends Fragment {
     private boolean isCurrentNewsCollected = false;
     // --- 新增结束 ---
 
+    // --- 新增：用于图片选择和拍照的 ActivityResultLauncher ---
+    private ActivityResultLauncher<String> selectImageLauncher;
+    private ActivityResultLauncher<Intent> takePictureLauncher;
+    private File photoFile; // 用于存储拍照生成的临时文件
+    // --- 新增结束 ---
+
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         binding = FragmentCredibilityBinding.inflate(inflater, container, false);
@@ -86,6 +100,37 @@ public class CredibilityFragment extends Fragment {
             // 确保 Fragment 能处理菜单
             setHasOptionsMenu(true);
         }
+
+        // --- 新增：初始化 ActivityResultLauncher ---
+        selectImageLauncher = registerForActivityResult(
+                new ActivityResultContracts.GetContent(),
+                uri -> {
+                    if (uri != null) {
+                        // 处理选中的图片 URI
+                        String imagePath = getRealPathFromUri(uri);
+                        if (imagePath != null) {
+                            // 调用 ViewModel 上传图片
+                            viewModel.addUserMessageWithImage(imagePath);
+                        } else {
+                            Toast.makeText(requireContext(), "无法获取图片路径", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
+
+        takePictureLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                    if (result.getResultCode() == getActivity().RESULT_OK) {
+                        // 拍照成功，photoFile 应该包含图片路径
+                        if (photoFile != null && photoFile.exists()) {
+                            // 调用 ViewModel 上传图片
+                            viewModel.addUserMessageWithImage(photoFile.getAbsolutePath());
+                        } else {
+                            Toast.makeText(requireContext(), "拍照失败或图片不存在", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
+        // --- 新增结束 ---
 
         setupObservers();
         setupClickListeners();
@@ -122,6 +167,65 @@ public class CredibilityFragment extends Fragment {
         loadAndDisplayLatestHistoryRecord();
         // --- 新增结束 ---
     }
+
+    // --- 新增：启动相机拍照的方法 ---
+    private void dispatchTakePictureIntent() {
+        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        // 确保有相机应用可以处理此 Intent
+        if (takePictureIntent.resolveActivity(requireActivity().getPackageManager()) != null) {
+            // 创建一个用于存储照片的文件
+            photoFile = null;
+            try {
+                photoFile = createImageFile();
+            } catch (IOException ex) {
+                // 错误处理
+                Log.e("CredibilityFragment", "Error occurred while creating the File", ex);
+                Toast.makeText(requireContext(), "创建图片文件失败", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // 如果文件创建成功，继续设置拍照
+            if (photoFile != null) {
+                Uri photoURI = FileProvider.getUriForFile(
+                        requireContext(),
+                        requireContext().getPackageName() + ".fileprovider", // 注意：包名需要与 AndroidManifest.xml 中的 authorities 一致
+                        photoFile);
+                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
+                takePictureLauncher.launch(takePictureIntent);
+            }
+        } else {
+            Toast.makeText(requireContext(), "设备上没有相机应用", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private File createImageFile() throws IOException {
+        // 创建一个以时间戳命名的图片文件
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
+        String imageFileName = "JPEG_" + timeStamp + "_";
+        File storageDir = requireActivity().getExternalFilesDir(android.os.Environment.DIRECTORY_PICTURES);
+        File image = File.createTempFile(
+                imageFileName,  /* 前缀 */
+                ".jpg",         /* 后缀 */
+                storageDir      /* 目录 */
+        );
+        return image;
+    }
+    // --- 新增结束 ---
+
+    // --- 新增：从 URI 获取真实路径的方法 (可能不适用于所有 Android 版本或第三方应用) ---
+    private String getRealPathFromUri(Uri uri) {
+        String[] projection = {android.provider.MediaStore.Images.Media.DATA};
+        try (android.database.Cursor cursor = requireActivity().getContentResolver().query(uri, projection, null, null, null)) {
+            if (cursor != null && cursor.moveToFirst()) {
+                int columnIndex = cursor.getColumnIndexOrThrow(android.provider.MediaStore.Images.Media.DATA);
+                return cursor.getString(columnIndex);
+            }
+        } catch (Exception e) {
+            Log.e("CredibilityFragment", "Error getting real path from URI", e);
+        }
+        return null;
+    }
+    // --- 新增结束 ---
 
     // --- 新增：加载并显示最新历史记录的方法 ---
     private void loadAndDisplayLatestHistoryRecord() {
@@ -289,6 +393,17 @@ public class CredibilityFragment extends Fragment {
                 // --- 新增结束 ---
             }
         });
+
+        // --- 新增：观察错误信息 ---
+        viewModel.getErrorMessage().observe(getViewLifecycleOwner(), errorMessage -> {
+            if (errorMessage != null && !errorMessage.isEmpty()) {
+                // 可以在这里显示 Toast 或者在UI上显示错误信息
+                Toast.makeText(requireContext(), errorMessage, Toast.LENGTH_LONG).show();
+                // 或者，可以将错误信息添加到聊天列表中显示
+                // 这取决于你希望错误信息如何呈现
+            }
+        });
+        // --- 新增结束 ---
     }
 
     private void setupClickListeners() {
@@ -374,14 +489,13 @@ public class CredibilityFragment extends Fragment {
 
         // 四个功能按钮 (可以扩展为选择图片、文件等)
         binding.photoButton.setOnClickListener(v -> {
-            Toast.makeText(requireContext(), "选择图片功能待实现", Toast.LENGTH_SHORT).show();
-            // 这里可以启动图片选择器
-            // 选择图片后，调用 viewModel.addUserMessage("", imageUrl, null);
+            // 启动相册选择图片
+            selectImageLauncher.launch("image/*");
         });
 
         binding.cameraButton.setOnClickListener(v -> {
-            Toast.makeText(requireContext(), "启动相机功能待实现", Toast.LENGTH_SHORT).show();
-            // 这里可以启动相机
+            // 启动相机拍照
+            dispatchTakePictureIntent();
         });
 
         binding.microphoneButton.setOnClickListener(v -> {

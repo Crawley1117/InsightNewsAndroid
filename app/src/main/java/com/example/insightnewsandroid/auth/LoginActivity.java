@@ -4,29 +4,24 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.text.InputType;
+import android.view.View; // 添加 View 类的导入
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.Toolbar;
 import com.example.insightnewsandroid.MainActivity;
+import com.example.insightnewsandroid.data.manager.ApiManager;
+import com.example.insightnewsandroid.data.manager.AuthService; // 导入 AuthService
+import com.example.insightnewsandroid.data.model.BaseResponse;
 import com.example.insightnewsandroid.databinding.ActivityLoginBinding;
-import android.view.View;
 
-import okhttp3.*;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.IOException;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class LoginActivity extends AppCompatActivity {
 
     private AuthRepository authRepo;
     private ActivityLoginBinding binding;
     private CountDownTimer countDownTimer;
-
-    // 网络相关常量
-    private static final String BASE_URL = "http://116.62.221.163:8087";
-    // 用于获取验证码的预认证 Token
-    private static final String PRE_AUTH_TOKEN = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOiIxODk2MDkzNTUwMCJ9.JV85gnurhGUCeK7D_DnG3NHznpABmSqtse3oNw1RDoc";
 
     // 调试用密码
     private static final String DEBUG_PASSWORD = "1117";
@@ -43,102 +38,77 @@ public class LoginActivity extends AppCompatActivity {
         binding.radioCode.setOnCheckedChangeListener((group, checkedId) -> {
             if (binding.radioCode.isChecked()) {
                 binding.layoutCodeOrPassword.setHint("验证码");
-                binding.btnGetCode.setVisibility(View.VISIBLE);
+                binding.btnGetCode.setVisibility(View.VISIBLE); // 现在可以正确使用 View.VISIBLE
                 binding.editCodeOrPassword.setInputType(InputType.TYPE_CLASS_NUMBER);
             } else {
                 binding.layoutCodeOrPassword.setHint("密码");
-                binding.btnGetCode.setVisibility(View.GONE);
-                binding.editCodeOrPassword.setInputType(InputType.TYPE_TEXT_VARIATION_PASSWORD);
+                binding.btnGetCode.setVisibility(View.GONE); // 现在可以正确使用 View.GONE
+                binding.editCodeOrPassword.setInputType(InputType.TYPE_TEXT_VARIATION_PASSWORD | InputType.TYPE_CLASS_TEXT);
             }
         });
 
         binding.btnGetCode.setOnClickListener(v -> {
-            String phone = binding.editPhone.getText().toString().trim();
-            if (!isValidPhoneNumber(phone)) {
-                Toast.makeText(this, "请输入有效的11位手机号", Toast.LENGTH_SHORT).show();
+            String email = binding.editPhone.getText().toString().trim(); // 改为 email
+            if (!isValidEmail(email)) { // 改为验证邮箱
+                Toast.makeText(this, "请输入有效的邮箱地址", Toast.LENGTH_SHORT).show();
                 return;
             }
-            sendVerificationCode(phone);
+            sendVerificationCode(email);
         });
 
         binding.btnLogin.setOnClickListener(v -> {
-            String phone = binding.editPhone.getText().toString().trim();
+            String email = binding.editPhone.getText().toString().trim(); // 改为 email
             String codeOrPass = binding.editCodeOrPassword.getText().toString().trim();
-            if (!isValidPhoneNumber(phone) || codeOrPass.isEmpty()) {
+
+            if (!isValidEmail(email) || codeOrPass.isEmpty()) { // 改为验证邮箱
                 Toast.makeText(this, "请填写完整信息", Toast.LENGTH_SHORT).show();
                 return;
             }
 
             if (binding.radioCode.isChecked()) {
                 // 验证码登录
-                verifyCodeAndLogin(phone, codeOrPass);
+                verifyCodeAndLogin(email, codeOrPass);
             } else {
                 // 密码登录
                 if (DEBUG_PASSWORD.equals(codeOrPass)) {
                     // 调试模式密码登录
                     Toast.makeText(this, "调试模式密码登录成功", Toast.LENGTH_SHORT).show();
-                    authRepo.setLoggedIn(phone, "debug_token_placeholder");
+                    authRepo.setLoggedIn(email, "debug_token_placeholder");
                     startActivity(new Intent(this, MainActivity.class));
                     finish();
                     return;
                 }
-                // 正常密码登录流程 (当前为模拟，需后端实现)
-                // 模拟登录成功 (临时)
-                authRepo.setLoggedIn(phone, "password_login_placeholder");
-                Toast.makeText(this, "密码登录（模拟）", Toast.LENGTH_SHORT).show();
-                startActivity(new Intent(this, MainActivity.class));
-                finish();
+                // 正常密码登录流程
+                loginWithPassword(email, codeOrPass);
             }
         });
     }
 
-    private void sendVerificationCode(String phone) {
-        HttpUrl.Builder urlBuilder = HttpUrl.parse(BASE_URL + "/common/code").newBuilder();
-        urlBuilder.addQueryParameter("phone", phone);
-        String url = urlBuilder.build().toString();
-
-        Request request = new Request.Builder()
-                .url(url)
-                .post(RequestBody.create("", MediaType.get("application/json")))
-                .addHeader("Authorization", PRE_AUTH_TOKEN) // 发送验证码时需要预认证 Token
-                .build();
-
-        client.newCall(request).enqueue(new Callback() {
+    private void sendVerificationCode(String email) {
+        Call<BaseResponse<Void>> call = ApiManager.getAuthService().sendVerificationCode(email);
+        call.enqueue(new Callback<BaseResponse<Void>>() {
             @Override
-            public void onFailure(Call call, IOException e) {
-                runOnUiThread(() -> {
-                    Toast.makeText(LoginActivity.this, "发送失败: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            public void onResponse(Call<BaseResponse<Void>> call, Response<BaseResponse<Void>> response) {
+                if (response.isSuccessful()) {
+                    BaseResponse<Void> baseResponse = response.body();
+                    if (baseResponse != null && baseResponse.isSuccess()) {
+                        Toast.makeText(LoginActivity.this, "验证码已发送", Toast.LENGTH_SHORT).show();
+                        startCountDown();
+                    } else {
+                        String msg = (baseResponse != null) ? baseResponse.getMsg() : "未知错误"; // 使用 getMsg()
+                        Toast.makeText(LoginActivity.this, "发送失败: " + msg, Toast.LENGTH_SHORT).show();
+                        resetGetCodeButton();
+                    }
+                } else {
+                    Toast.makeText(LoginActivity.this, "发送失败: " + response.code(), Toast.LENGTH_SHORT).show();
                     resetGetCodeButton();
-                });
+                }
             }
 
             @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                String responseBody = response.body().string();
-                boolean success = response.isSuccessful();
-
-                runOnUiThread(() -> {
-                    if (success) {
-                        try {
-                            JSONObject json = new JSONObject(responseBody);
-                            int code = json.getInt("code");
-                            String message = json.getString("msg");
-                            if (code == 200) {
-                                Toast.makeText(LoginActivity.this, "验证码已发送", Toast.LENGTH_SHORT).show();
-                                startCountDown();
-                            } else {
-                                Toast.makeText(LoginActivity.this, "发送失败: " + message, Toast.LENGTH_SHORT).show();
-                                resetGetCodeButton();
-                            }
-                        } catch (JSONException e) {
-                            Toast.makeText(LoginActivity.this, "发送失败: 服务器响应格式错误", Toast.LENGTH_SHORT).show();
-                            resetGetCodeButton();
-                        }
-                    } else {
-                        Toast.makeText(LoginActivity.this, "发送失败: " + response.code() + " " + responseBody, Toast.LENGTH_SHORT).show();
-                        resetGetCodeButton();
-                    }
-                });
+            public void onFailure(Call<BaseResponse<Void>> call, Throwable t) {
+                Toast.makeText(LoginActivity.this, "发送失败: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                resetGetCodeButton();
             }
         });
     }
@@ -159,70 +129,77 @@ public class LoginActivity extends AppCompatActivity {
         }.start();
     }
 
-    private void verifyCodeAndLogin(String phone, String code) {
-        MediaType JSON = MediaType.get("application/json; charset=utf-8");
-        JSONObject jsonBody = new JSONObject();
-        try {
-            jsonBody.put("phone", phone);
-            jsonBody.put("code", code);
-        } catch (JSONException e) {
-            e.printStackTrace();
-            Toast.makeText(this, "内部错误", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        RequestBody body = RequestBody.create(jsonBody.toString(), JSON);
-
-        // 登录接口不需要 Authorization header
-        Request request = new Request.Builder()
-                .url(BASE_URL + "/user/login") // 请根据你的后端实际接口修改此URL
-                .post(body)
-                .addHeader("Content-Type", "application/json")
-                .build();
-
-        client.newCall(request).enqueue(new Callback() {
+    private void verifyCodeAndLogin(String email, String code) {
+        AuthService.LoginWithCodeRequest request = new AuthService.LoginWithCodeRequest(email, code); // 使用新的请求类，明确指定
+        Call<BaseResponse<String>> call = ApiManager.getAuthService().loginWithCode(request); // 注意泛型是 String
+        call.enqueue(new Callback<BaseResponse<String>>() {
             @Override
-            public void onFailure(Call call, IOException e) {
-                runOnUiThread(() -> {
-                    Toast.makeText(LoginActivity.this, "登录失败: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                });
+            public void onResponse(Call<BaseResponse<String>> call, Response<BaseResponse<String>> response) {
+                if (response.isSuccessful()) {
+                    BaseResponse<String> baseResponse = response.body(); // 注意泛型是 String
+                    if (baseResponse != null && baseResponse.isSuccess()) {
+                        String token = baseResponse.getData(); // 从data字段获取token
+                        if (token != null && !token.isEmpty()) {
+                            authRepo.setLoggedIn(email, token);
+                            Toast.makeText(LoginActivity.this, "登录成功", Toast.LENGTH_SHORT).show();
+                            startActivity(new Intent(LoginActivity.this, MainActivity.class));
+                            finish();
+                        } else {
+                            Toast.makeText(LoginActivity.this, "登录失败: Token为空", Toast.LENGTH_SHORT).show();
+                        }
+                    } else {
+                        String msg = (baseResponse != null) ? baseResponse.getMsg() : "未知错误"; // 使用 getMsg()
+                        Toast.makeText(LoginActivity.this, "登录失败: " + msg, Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    Toast.makeText(LoginActivity.this, "登录失败: " + response.code(), Toast.LENGTH_SHORT).show();
+                }
             }
 
             @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                String responseBody = response.body().string();
-                boolean success = response.isSuccessful();
-
-                runOnUiThread(() -> {
-                    if (success) {
-                        try {
-                            JSONObject json = new JSONObject(responseBody);
-                            int serverCode = json.getInt("code");
-                            String message = json.getString("msg");
-                            String token = json.optString("data", "");
-
-                            if (serverCode == 200 && !token.isEmpty()) {
-                                // 登录成功，保存用户ID和Token
-                                authRepo.setLoggedIn(phone, token);
-                                Toast.makeText(LoginActivity.this, message, Toast.LENGTH_SHORT).show();
-
-                                startActivity(new Intent(LoginActivity.this, MainActivity.class));
-                                finish();
-                            } else {
-                                Toast.makeText(LoginActivity.this, message, Toast.LENGTH_SHORT).show();
-                            }
-                        } catch (JSONException e) {
-                            Toast.makeText(LoginActivity.this, "登录失败: 服务器响应格式错误", Toast.LENGTH_SHORT).show();
-                        }
-                    } else {
-                        Toast.makeText(LoginActivity.this, "登录失败: " + response.code() + " " + responseBody, Toast.LENGTH_SHORT).show();
-                    }
-                });
+            public void onFailure(Call<BaseResponse<String>> call, Throwable t) {
+                Toast.makeText(LoginActivity.this, "登录失败: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
 
-    private boolean isValidPhoneNumber(String phone) {
-        return phone.matches("^1[3-9]\\d{9}$");
+    private void loginWithPassword(String email, String password) {
+        AuthService.LoginWithPasswordRequest request = new AuthService.LoginWithPasswordRequest(email, password); // 使用新的请求类，明确指定
+        Call<BaseResponse<String>> call = ApiManager.getAuthService().loginWithPassword(request); // 注意泛型是 String
+        call.enqueue(new Callback<BaseResponse<String>>() {
+            @Override
+            public void onResponse(Call<BaseResponse<String>> call, Response<BaseResponse<String>> response) {
+                if (response.isSuccessful()) {
+                    BaseResponse<String> baseResponse = response.body(); // 注意泛型是 String
+                    if (baseResponse != null && baseResponse.isSuccess()) {
+                        String token = baseResponse.getData(); // 从data字段获取token
+                        if (token != null && !token.isEmpty()) {
+                            authRepo.setLoggedIn(email, token);
+                            Toast.makeText(LoginActivity.this, "登录成功", Toast.LENGTH_SHORT).show();
+                            startActivity(new Intent(LoginActivity.this, MainActivity.class));
+                            finish();
+                        } else {
+                            Toast.makeText(LoginActivity.this, "登录失败: Token为空", Toast.LENGTH_SHORT).show();
+                        }
+                    } else {
+                        String msg = (baseResponse != null) ? baseResponse.getMsg() : "未知错误"; // 使用 getMsg()
+                        Toast.makeText(LoginActivity.this, "登录失败: " + msg, Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    Toast.makeText(LoginActivity.this, "登录失败: " + response.code(), Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<BaseResponse<String>> call, Throwable t) {
+                Toast.makeText(LoginActivity.this, "登录失败: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    // 验证邮箱格式
+    private boolean isValidEmail(String email) {
+        return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches();
     }
 
     private void resetGetCodeButton() {
@@ -240,6 +217,4 @@ public class LoginActivity extends AppCompatActivity {
             countDownTimer.cancel();
         }
     }
-
-    private static final OkHttpClient client = new OkHttpClient();
 }

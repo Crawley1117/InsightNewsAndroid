@@ -1,4 +1,4 @@
-//新增一些依赖以及dataBinding
+// 新增一些依赖以及dataBinding
 // app/build.gradle.kts
 plugins {
     alias(libs.plugins.android.application) // 使用 alias 引用 Android 插件
@@ -64,6 +64,10 @@ dependencies {
     implementation("com.google.code.gson:gson:2.10.1")
 
     implementation("com.squareup.okhttp3:okhttp:4.12.0") // 选择一个较新的稳定版本
+
+    // 新增：Retrofit
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.11.0")
 
     //新增
     implementation("com.google.android.material:material:1.10.0")

@@ -1,32 +1,44 @@
 package com.example.insightnewsandroid.data.model;
 
+import com.google.gson.annotations.SerializedName;
+
 @SuppressWarnings("unused")
-public class BaseResponse {
-    private boolean success;
-    private String message;
-    private Object data;
+public class BaseResponse<T> { // 泛型化，以便 data 字段可以是不同类型
+    @SerializedName("code")
+    private int code;
 
-    public boolean isSuccess() {
-        return success;
+    @SerializedName("msg") // 使用后端实际返回的字段名
+    private String msg;
+
+    @SerializedName("data")
+    private T data; // 使用泛型 T
+
+    public int getCode() {
+        return code;
     }
 
-    public void setSuccess(boolean success) {
-        this.success = success;
+    public void setCode(int code) {
+        this.code = code;
     }
 
-    public String getMessage() {
-        return message;
+    public String getMsg() {
+        return msg;
     }
 
-    public void setMessage(String message) {
-        this.message = message;
+    public void setMsg(String msg) {
+        this.msg = msg;
     }
 
-    public Object getData() {
+    public T getData() {
         return data;
     }
 
-    public void setData(Object data) {
+    public void setData(T data) {
         this.data = data;
+    }
+
+    // 判断是否成功，根据后端返回 code == 200 为成功
+    public boolean isSuccess() {
+        return code == 200;
     }
 }
