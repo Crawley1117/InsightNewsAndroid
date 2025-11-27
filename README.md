@@ -1,6 +1,4 @@
-好的，这是根据本次更新生成的 0.2 版本的 README。
 
----
 
 # InsightNews for Android
 
