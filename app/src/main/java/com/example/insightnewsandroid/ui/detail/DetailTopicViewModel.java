@@ -1,299 +1,152 @@
 package com.example.insightnewsandroid.ui.detail;
 
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.util.Log;
-
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
-
-import com.example.insightnewsandroid.data.UserProfileManager;
-import com.example.insightnewsandroid.data.manager.TopicManager;
+import com.example.insightnewsandroid.data.model.ApiResponse;
 import com.example.insightnewsandroid.data.model.Comment;
+import com.example.insightnewsandroid.data.model.NewsArticle;
 import com.example.insightnewsandroid.data.model.NewsItem;
-import com.example.insightnewsandroid.data.model.Topic;
-import com.example.insightnewsandroid.data.model.UserProfile;
-
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
+import com.example.insightnewsandroid.data.repository.NewsRepository;
 import java.util.List;
-import java.util.Locale;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class DetailTopicViewModel extends ViewModel {
 
-    private static final String TAG = "DetailTopicViewModel";
-
-    private final MutableLiveData<NewsItem> topicDetail = new MutableLiveData<>();
+    private final NewsRepository newsRepository;
+    private final MutableLiveData<ApiResponse<NewsArticle>> topicDetails = new MutableLiveData<>();
+    private final MutableLiveData<ApiResponse<List<Comment>>> comments = new MutableLiveData<>();
+    private final MutableLiveData<ApiResponse<Void>> commentPostResult = new MutableLiveData<>();
+    private final MutableLiveData<ApiResponse<Void>> toggleLikeResult = new MutableLiveData<>();
+    private final MutableLiveData<ApiResponse<List<Comment>>> commentReplies = new MutableLiveData<>();
+    private final MutableLiveData<ApiResponse<Void>> deleteCommentResult = new MutableLiveData<>();
+    private final MutableLiveData<ApiResponse<Void>> toggleFavoriteResult = new MutableLiveData<>();
+    // [已新增] 用于持有相关新闻的LiveData
     private final MutableLiveData<List<NewsItem>> relatedNews = new MutableLiveData<>();
-    private final MutableLiveData<Boolean> commentSuccess = new MutableLiveData<>();
-    private final MutableLiveData<Boolean> likeSuccess = new MutableLiveData<>();
-    private final MutableLiveData<String> errorMessage = new MutableLiveData<>();
 
-    private Context appContext;
 
-    public LiveData<NewsItem> getTopicDetail() {
-        return topicDetail;
+    public DetailTopicViewModel() {
+        this.newsRepository = new NewsRepository();
     }
 
-    public LiveData<List<NewsItem>> getRelatedNews() {
-        return relatedNews;
-    }
+    public LiveData<ApiResponse<NewsArticle>> getTopicDetails() { return topicDetails; }
+    public LiveData<ApiResponse<List<Comment>>> getComments() { return comments; }
+    public LiveData<ApiResponse<Void>> getCommentPostResult() { return commentPostResult; }
+    public LiveData<ApiResponse<Void>> getToggleLikeResult() { return toggleLikeResult; }
+    public LiveData<ApiResponse<List<Comment>>> getCommentReplies() { return commentReplies; }
+    public LiveData<ApiResponse<Void>> getDeleteCommentResult() { return deleteCommentResult; }
+    public LiveData<ApiResponse<Void>> getToggleFavoriteResult() { return toggleFavoriteResult; }
+    // [已新增] 相关新闻的Getter
+    public LiveData<List<NewsItem>> getRelatedNews() { return relatedNews; }
 
-    public LiveData<Boolean> getCommentSuccess() {
-        return commentSuccess;
-    }
-
-    public LiveData<Boolean> getLikeSuccess() {
-        return likeSuccess;
-    }
-
-    public LiveData<String> getErrorMessage() {
-        return errorMessage;
-    }
-
-    public void setAppContext(Context context) {
-        this.appContext = context.getApplicationContext();
-        Log.d(TAG, "应用上下文已设置");
-    }
-
-    /**
-     * 加载话题详情
-     */
-    public void loadTopicDetail(int topicId) {
-        Log.d(TAG, "loadTopicDetail: 开始加载话题详情, topicId=" + topicId);
-
-        if (appContext != null) {
-            Topic topic = TopicManager.getInstance(appContext).getTopicById(topicId);
-            if (topic != null) {
-                Log.d(TAG, "找到话题: " + topic.getTitle() + ", 分类: " + topic.getCategory());
-
-                // 转换为NewsItem用于UI显示（保持兼容性）
-                NewsItem topicItem = new NewsItem();
-                topicItem.setId(String.valueOf(topic.getId()));
-                topicItem.setTitle(topic.getTitle());
-                topicItem.setContent(topic.getContent());
-                topicItem.setTopicCategory(topic.getCategory());
-                topicItem.setViewCount(topic.getFollowCount());
-                topicItem.setImageUrl(topic.getImageUrl());
-
-                // 确保设置话题详情
-                topicDetail.setValue(topicItem);
-
-                // 增加浏览计数
-                TopicManager.getInstance(appContext).incrementTopicViewCount(topicId);
-                Log.d(TAG, "话题详情加载完成");
-            } else {
-                Log.e(TAG, "未找到话题, topicId=" + topicId);
-                errorMessage.setValue("未找到话题信息");
-            }
-        } else {
-            Log.e(TAG, "appContext为null，无法加载话题详情");
-            errorMessage.setValue("系统错误");
-        }
-    }
-
-    /**
-     * 加载相关新闻
-     */
-    public void loadRelatedNewsForTopic(int topicId) {
-        Log.d(TAG, "loadRelatedNewsForTopic: 开始加载相关新闻, topicId=" + topicId);
-
-        if (appContext != null) {
-            List<NewsItem> relatedNewsList = TopicManager.getInstance(appContext).getRelatedNewsForTopic(topicId);
-
-            // 确保每条新闻都有内容
-            if (relatedNewsList != null) {
-                for (NewsItem news : relatedNewsList) {
-                    if (news.getContent() == null || news.getContent().isEmpty()) {
-                        // 如果没有内容，设置一些示例内容
-                        String sampleContent = "这是关于 \"" + news.getTitle() + "\" 的详细新闻报道。\n\n" +
-                                "在这里可以看到新闻的完整分析报告，包括可信度评估、关键信息提取和相关背景分析。\n\n" +
-                                "新闻发布时间：" + news.getDate() + "\n" +
-                                "浏览次数：" + news.getViewCount() + "次\n" +
-                                "点赞数：" + news.getLikeCount() + "次";
-                        news.setContent(sampleContent);
-                    }
-                }
-
-                Log.d(TAG, "找到相关新闻: " + relatedNewsList.size() + " 条");
-                relatedNews.setValue(relatedNewsList);
-            } else {
-                Log.d(TAG, "没有相关新闻数据");
-                relatedNews.setValue(new ArrayList<>());
-            }
-        } else {
-            Log.e(TAG, "appContext为null，无法加载相关新闻");
-            errorMessage.setValue("系统错误");
-        }
-    }
-
-    /**
-     * 添加评论 - 修复myComment设置
-     */
-    public void addComment(int topicId, String comment) {
-        Log.d(TAG, "addComment: topicId=" + topicId + ", comment=" + comment);
-
-        if (appContext == null) {
-            errorMessage.setValue("系统错误");
-            return;
-        }
-
-        if (comment == null || comment.trim().isEmpty()) {
-            errorMessage.setValue("评论内容不能为空");
-            return;
-        }
-
-        // 创建新评论 - 使用固定的时间戳
-        long currentTime = System.currentTimeMillis();
-        Comment newComment = new Comment();
-        newComment.setId((int) currentTime); // 使用时间戳作为ID
-        newComment.setUserId(getCurrentUserId());
-        newComment.setUsername(getCurrentUsername());
-        newComment.setUserImg(getCurrentUserAvatar());
-        newComment.setComment(comment.trim());
-        newComment.setTimestamp(currentTime); // 存储固定的时间戳
-        newComment.setCreatedAt(getRelativeTime(currentTime)); // 存储计算好的相对时间
-        newComment.setLikeCount(0);
-        newComment.setLike(false);
-        newComment.setMyComment(true); // 只有新发布的评论才设置为true
-        newComment.setChildren(new ArrayList<>());
-
-        // 使用TopicManager保存评论
-        TopicManager.getInstance(appContext).addCommentToTopic(topicId, newComment);
-
-        Log.d(TAG, "评论添加成功: topicId=" + topicId + ", 用户=" + newComment.getUsername() + ", myComment=" + newComment.isMyComment());
-        commentSuccess.setValue(true);
-    }
-
-    /**
-     * 获取话题的评论列表 - 修复myComment判断
-     */
-    public List<Comment> getCommentsForTopic(int topicId) {
-        Log.d(TAG, "getCommentsForTopic: topicId=" + topicId);
-
-        if (appContext != null) {
-            List<Comment> comments = TopicManager.getInstance(appContext).getCommentsForTopic(topicId);
-            Log.d(TAG, "获取到评论数量: " + (comments != null ? comments.size() : 0));
-
-            // 修复myComment字段：只有当前用户的评论才设置为true
-            if (comments != null) {
-                int currentUserId = getCurrentUserId();
-                for (Comment comment : comments) {
-                    boolean isMyComment = (comment.getUserId() == currentUserId);
-                    if (comment.isMyComment() != isMyComment) {
-                        comment.setMyComment(isMyComment);
-                    }
-
-                    Log.d(TAG, "评论ID=" + comment.getId() +
-                            ", 用户ID=" + comment.getUserId() +
-                            ", 当前用户ID=" + currentUserId +
-                            ", myComment=" + comment.isMyComment());
+    public void fetchTopicDetails(String token, int topicId) {
+        newsRepository.getTopicDetails(token, topicId).enqueue(new Callback<ApiResponse<NewsArticle>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<NewsArticle>> call, Response<ApiResponse<NewsArticle>> response) {
+                ApiResponse<NewsArticle> apiResponse = response.body();
+                topicDetails.setValue(apiResponse);
+                // [已新增] 获取到详情后，自动提取并更新相关新闻列表
+                if (apiResponse != null && apiResponse.getCode() == 200 && apiResponse.getData() != null) {
+                   // relatedNews.setValue(apiResponse.getData().getRelatedNews());
                 }
             }
-
-            return comments;
-        }
-        Log.e(TAG, "appContext为null，无法获取评论");
-        return new ArrayList<>();
-    }
-
-    /**
-     * 点赞/取消点赞评论
-     */
-    public void toggleCommentLike(int topicId, int commentId, boolean newLikeStatus, int newLikeCount) {
-        Log.d(TAG, "toggleCommentLike: topicId=" + topicId + ", commentId=" + commentId + ", newLikeStatus=" + newLikeStatus + ", newLikeCount=" + newLikeCount);
-
-        if (appContext != null) {
-            // 使用TopicManager更新点赞状态
-            TopicManager.getInstance(appContext).updateCommentLikeStatus(
-                    topicId, commentId, newLikeStatus, newLikeCount);
-
-            Log.d(TAG, "点赞状态已更新到存储: topicId=" + topicId + ", commentId=" + commentId);
-        } else {
-            Log.e(TAG, "appContext为null，无法更新点赞状态");
-            errorMessage.setValue("系统错误，无法更新点赞状态");
-            return;
-        }
-
-        // 通知UI更新成功
-        likeSuccess.setValue(true);
-    }
-
-    /**
-     * 将时间戳转换为相对时间（如：刚刚、2分钟前、1小时前等）
-     */
-    private String getRelativeTime(long timestamp) {
-        long now = System.currentTimeMillis();
-        long diff = now - timestamp;
-
-        if (diff < 60000) { // 1分钟内
-            return "刚刚";
-        } else if (diff < 3600000) { // 1小时内
-            long minutes = diff / 60000;
-            return minutes + "分钟前";
-        } else if (diff < 86400000) { // 24小时内
-            long hours = diff / 3600000;
-            return hours + "小时前";
-        } else if (diff < 604800000) { // 7天内
-            long days = diff / 86400000;
-            return days + "天前";
-        } else {
-            // 超过7天显示具体日期
-            SimpleDateFormat sdf = new SimpleDateFormat("MM-dd HH:mm", Locale.getDefault());
-            return sdf.format(new Date(timestamp));
-        }
-    }
-
-    /**
-     * 更新所有评论的相对时间显示
-     */
-    public void updateCommentsRelativeTime(int topicId) {
-        Log.d(TAG, "updateCommentsRelativeTime: topicId=" + topicId);
-
-        if (appContext != null) {
-            // 使用TopicManager更新评论时间显示
-            TopicManager.getInstance(appContext).updateCommentsTimeDisplay(topicId);
-            Log.d(TAG, "评论时间显示更新完成");
-        }
-    }
-
-    private int getCurrentUserId() {
-        // 从 SharedPreferences 或用户管理类获取当前用户ID
-        if (appContext != null) {
-            SharedPreferences sharedPref = appContext.getSharedPreferences("user_profile", Context.MODE_PRIVATE);
-            return sharedPref.getInt("user_id", 1);
-        }
-        return 1;
-    }
-
-    private String getCurrentUsername() {
-        if (appContext != null) {
-            UserProfile profile = UserProfileManager.INSTANCE.getCurrentProfile(appContext);
-            String username = profile.getUsername();
-            Log.d(TAG, "当前用户名: " + username);
-            return username;
-        }
-        Log.w(TAG, "appContext为null，使用默认用户名");
-        return "用户";
-    }
-
-    private String getCurrentUserAvatar() {
-        if (appContext != null) {
-            UserProfile profile = UserProfileManager.INSTANCE.getCurrentProfile(appContext);
-            String avatarUri = profile.getAvatarUri();
-
-            // 添加调试信息
-            if (avatarUri == null || avatarUri.isEmpty()) {
-                Log.d(TAG, "用户头像URI为空");
-                return "";
-            } else {
-                Log.d(TAG, "用户头像URI: " + avatarUri);
-                return avatarUri;
+            @Override
+            public void onFailure(Call<ApiResponse<NewsArticle>> call, Throwable t) {
+                topicDetails.setValue(null);
             }
-        }
-        Log.w(TAG, "appContext为null，无法获取用户头像");
-        return "";
+        });
+    }
+
+    public void toggleTopicFavorite(String token, int topicId) {
+        newsRepository.toggleTopicFavorite(token, topicId).enqueue(new Callback<ApiResponse<Void>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {
+                toggleFavoriteResult.setValue(response.body());
+                if(response.isSuccessful()){
+                    fetchTopicDetails(token, topicId);
+                }
+            }
+            @Override
+            public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
+                toggleFavoriteResult.setValue(null);
+            }
+        });
+    }
+
+    public void fetchComments(String token, String topicId, int page, int pagesize) {
+        newsRepository.getComments(token, topicId, page, pagesize).enqueue(new Callback<ApiResponse<List<Comment>>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<List<Comment>>> call, Response<ApiResponse<List<Comment>>> response) {
+                comments.setValue(response.body());
+            }
+            @Override
+            public void onFailure(Call<ApiResponse<List<Comment>>> call, Throwable t) {
+                comments.setValue(null);
+            }
+        });
+    }
+
+    public void fetchCommentReplies(String token, int commentId) {
+        newsRepository.getCommentReplies(token, commentId).enqueue(new Callback<ApiResponse<List<Comment>>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<List<Comment>>> call, Response<ApiResponse<List<Comment>>> response) {
+                commentReplies.setValue(response.body());
+            }
+            @Override
+            public void onFailure(Call<ApiResponse<List<Comment>>> call, Throwable t) {
+                commentReplies.setValue(null);
+            }
+        });
+    }
+
+    public void postComment(String token, String topicId, Comment comment) {
+        newsRepository.postComment(token, topicId, comment).enqueue(new Callback<ApiResponse<Void>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {
+                commentPostResult.setValue(response.body());
+                if (response.isSuccessful()) {
+                    fetchComments(token, topicId, 1, 10);
+                }
+            }
+            @Override
+            public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
+                commentPostResult.setValue(null);
+            }
+        });
+    }
+
+    public void toggleCommentLike(String token, int commentId) {
+        newsRepository.toggleCommentLike(token, commentId).enqueue(new Callback<ApiResponse<Void>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {
+                toggleLikeResult.setValue(response.body());
+            }
+            @Override
+            public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
+                toggleLikeResult.setValue(null);
+            }
+        });
+    }
+
+    public void deleteComment(String token, String topicId, int commentId) {
+        newsRepository.deleteComment(token, commentId).enqueue(new Callback<ApiResponse<Void>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<Void>> call, Response<ApiResponse<Void>> response) {
+                deleteCommentResult.setValue(response.body());
+                if (response.isSuccessful()) {
+                    fetchComments(token, topicId, 1, 10);
+                }
+            }
+            @Override
+            public void onFailure(Call<ApiResponse<Void>> call, Throwable t) {
+                deleteCommentResult.setValue(null);
+            }
+        });
+    }
+
+    public void resetCommentPostResult() {
+        commentPostResult.setValue(null);
     }
 }

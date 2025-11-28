@@ -38,26 +38,18 @@ public class DetailTopicPagerAdapter extends FragmentStateAdapter {
         return 2; // 两个tab：新闻和评论区
     }
 
-    /**
-     * 获取指定位置的Fragment
-     */
     public Fragment getFragment(int position) {
         return fragmentMap.get(position);
     }
 
-    /**
-     * 移除Fragment引用
-     */
     public void removeFragment(int position) {
         fragmentMap.remove(position);
     }
 
     public void refreshComments() {
-        // 可以通过EventBus或其他方式通知Fragment刷新
-        // 或者通过ViewModel来通知刷新
         Fragment commentsFragment = getFragment(1);
         if (commentsFragment instanceof TopicCommentsFragment) {
-            ((TopicCommentsFragment) commentsFragment).refreshComments();
+            ((TopicCommentsFragment) commentsFragment).loadComments();
         }
     }
 }

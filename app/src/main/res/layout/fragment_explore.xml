@@ -260,14 +260,6 @@
                         </LinearLayout>
 
                         <!-- 底部指示器 -->
-                        <View
-                            android:id="@+id/indicator"
-                            android:layout_width="16dp"
-                            android:layout_height="2dp"
-                            android:background="@color/category_indicator"
-                            android:layout_below="@id/categoryContainer"
-                            android:layout_marginStart="7dp"
-                            android:translationX="7dp" />
 
                     </RelativeLayout>
 

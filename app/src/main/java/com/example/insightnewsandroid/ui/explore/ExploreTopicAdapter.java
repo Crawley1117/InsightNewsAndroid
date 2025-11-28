@@ -1,4 +1,3 @@
-// ui/explore/ExploreTopicAdapter.java
 package com.example.insightnewsandroid.ui.explore;
 
 import android.view.LayoutInflater;
@@ -12,15 +11,17 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.insightnewsandroid.R;
+import com.example.insightnewsandroid.data.model.NewsArticle; // 导入新的数据模型
 import com.example.insightnewsandroid.databinding.ItemExploreTopicBinding;
-import com.example.insightnewsandroid.ui.explore.model.ExploreTopic;
 
-public class ExploreTopicAdapter extends ListAdapter<ExploreTopic, ExploreTopicAdapter.ViewHolder> {
+// 修改：整个Adapter现在使用NewsArticle模型
+public class ExploreTopicAdapter extends ListAdapter<NewsArticle, ExploreTopicAdapter.ViewHolder> {
 
     private OnItemClickListener onItemClickListener;
 
+    // 修改：接口使用NewsArticle
     public interface OnItemClickListener {
-        void onItemClick(ExploreTopic topic);
+        void onItemClick(NewsArticle article);
     }
 
     public void setOnItemClickListener(OnItemClickListener listener) {
@@ -42,8 +43,8 @@ public class ExploreTopicAdapter extends ListAdapter<ExploreTopic, ExploreTopicA
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        ExploreTopic topic = getItem(position);
-        holder.bind(topic);
+        NewsArticle article = getItem(position);
+        holder.bind(article);
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
@@ -61,38 +62,46 @@ public class ExploreTopicAdapter extends ListAdapter<ExploreTopic, ExploreTopicA
             });
         }
 
-        public void bind(ExploreTopic topic) {
-            binding.tvTitle.setText(topic.getTitle());
-            binding.tvContent.setText(topic.getContent());
-            binding.tvCategory.setText(topic.getTopic());
-            binding.tvFollows.setText(topic.getFollows() + "人关注");
-            binding.tvHashTag.setText("#");
+        // 修改：bind方法现在接收NewsArticle对象
+        public void bind(NewsArticle article) {
+            binding.tvTitle.setText(article.getTitle());
+            binding.tvContent.setText(article.getContent());
 
-            // 正确的图片加载方式 - 避免方法重载冲突
-            String imageUrl = topic.getThumbPhotoURL();
+            // 隐藏在新模型中不存在的字段对应的UI控件
+            binding.tvCategory.setVisibility(View.GONE);
+            binding.tvFollows.setVisibility(View.GONE);
+            binding.tvHashTag.setVisibility(View.GONE);
+
+            String imageUrl = article.getImageUrl();
 
             if (imageUrl != null && !imageUrl.isEmpty() && !imageUrl.equals("null")) {
-                // 有有效图片URL时加载图片
                 Glide.with(binding.getRoot().getContext())
                         .load(imageUrl)
+                        // [已修改] 使用更合适的灰色背景作为占位图
+                        .placeholder(R.drawable.button_background)
+                        // [已修改] 加载错误时也使用相同的灰色背景
+                        .error(R.drawable.button_background)
                         .into(binding.ivThumb);
             } else {
-                // 没有图片时清除图片，显示灰色背景
-                binding.ivThumb.setImageDrawable(null);
+                // [已修改] 如果没有图片，也直接设置灰色背景
+                binding.ivThumb.setImageResource(R.drawable.button_background);
             }
         }
     }
 
-    private static final DiffUtil.ItemCallback<ExploreTopic> DIFF_CALLBACK =
-            new DiffUtil.ItemCallback<ExploreTopic>() {
+    // 修改：DiffUtil现在比较NewsArticle对象
+    private static final DiffUtil.ItemCallback<NewsArticle> DIFF_CALLBACK =
+            new DiffUtil.ItemCallback<NewsArticle>() {
                 @Override
-                public boolean areItemsTheSame(@NonNull ExploreTopic oldItem, @NonNull ExploreTopic newItem) {
+                public boolean areItemsTheSame(@NonNull NewsArticle oldItem, @NonNull NewsArticle newItem) {
                     return oldItem.getId() == newItem.getId();
                 }
 
                 @Override
-                public boolean areContentsTheSame(@NonNull ExploreTopic oldItem, @NonNull ExploreTopic newItem) {
-                    return oldItem.equals(newItem);
+                public boolean areContentsTheSame(@NonNull NewsArticle oldItem, @NonNull NewsArticle newItem) {
+                    // 更可靠的内容比较
+                    return oldItem.getTitle().equals(newItem.getTitle())
+                            && oldItem.getContent().equals(newItem.getContent());
                 }
             };
 }

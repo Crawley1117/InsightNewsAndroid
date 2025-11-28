@@ -1,86 +1,121 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="16dp"
-    android:background="?attr/selectableItemBackground">
+    android:padding="16dp">
 
+    <!-- 主评论内容 -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical">
+        android:orientation="horizontal">
 
-        <!-- 用户头像 -->
-        <ImageView
-            android:id="@+id/iv_avatar"
+        <androidx.cardview.widget.CardView
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:scaleType="centerCrop"
-            android:background="@drawable/circle_border"
-            android:layout_marginEnd="12dp" />
+            app:cardCornerRadius="20dp"
+            app:cardElevation="0dp">
 
-        <!-- 用户信息 -->
+            <ImageView
+                android:id="@+id/iv_user_avatar"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:src="@drawable/ic_default_avatar"/>
+
+        </androidx.cardview.widget.CardView>
+
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:layout_marginStart="12dp">
 
             <TextView
                 android:id="@+id/tv_username"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="用户名"
-                android:textSize="14sp"
+                android:textColor="@color/text_primary"
                 android:textStyle="bold" />
 
             <TextView
-                android:id="@+id/tv_time"
-                android:layout_width="wrap_content"
+                android:id="@+id/tv_comment_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="时间"
-                android:textSize="12sp"
-                android:textColor="@color/gray" />
+                android:layout_marginTop="4dp"
+                android:text="这是主评论内容。" />
 
-        </LinearLayout>
-
-        <!-- 点赞区域 -->
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
-
-            <TextView
-                android:id="@+id/tv_like_count"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="0"
-                android:textSize="12sp"
-                android:layout_marginEnd="4dp" />
+                android:layout_marginTop="8dp"
+                android:gravity="center_vertical">
 
-            <ImageView
-                android:id="@+id/iv_like"
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:src="@drawable/ic_like_unselected"
-                android:contentDescription="点赞" />
+                <TextView
+                    android:id="@+id/tv_timestamp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="2小时前" />
 
+                <Space
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="1" />
+
+                <!-- [已新增] 删除评论的图标 -->
+                <ImageView
+                    android:id="@+id/iv_delete_comment"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@drawable/ic_delete"
+                    android:visibility="gone" 
+                    android:layout_marginEnd="16dp"/>
+
+                <ImageView
+                    android:id="@+id/iv_like"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@drawable/ic_like_selector" />
+
+                <TextView
+                    android:id="@+id/tv_like_count"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:text="0" />
+
+                <ImageView
+                    android:id="@+id/iv_reply"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_marginStart="16dp"
+                    android:src="@android:drawable/ic_menu_revert" />
+            </LinearLayout>
         </LinearLayout>
-
     </LinearLayout>
 
-    <!-- 评论内容 -->
-    <TextView
-        android:id="@+id/tv_content"
+    <!-- 子评论容器和展开/折叠按钮 -->
+    <LinearLayout
+        android:id="@+id/sub_comments_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="评论内容"
-        android:textSize="14sp"
-        android:lineSpacingExtra="4dp"
+        android:orientation="vertical"
+        android:layout_marginStart="52dp" 
+        android:layout_marginTop="8dp"/>
+
+    <TextView
+        android:id="@+id/tv_expand_replies"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_marginStart="52dp"
-        android:layout_marginTop="8dp" />
+        android:layout_marginTop="4dp"
+        android:text="查看更多回复"
+        android:textColor="@color/text_secondary"
+        android:textSize="12sp"
+        android:visibility="gone"/>
 
 </LinearLayout>

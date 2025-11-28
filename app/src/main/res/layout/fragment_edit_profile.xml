@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     android:background="@drawable/profile_background">
 
     <!-- 顶部标题栏 -->
     <LinearLayout
+        android:id="@+id/top_bar"
         android:layout_width="match_parent"
         android:layout_height="80dp"
         android:orientation="horizontal"
         android:background="@drawable/up"
         android:gravity="center_vertical"
         android:paddingHorizontal="16dp"
-        android:paddingTop="20dp">
+        android:paddingTop="20dp"
+        android:layout_alignParentTop="true">
 
-        <!-- 返回按钮 -->
         <ImageView
             android:id="@+id/iv_back"
             android:layout_width="24dp"
@@ -33,18 +33,32 @@
             android:textStyle="bold"
             android:gravity="center" />
 
-        <!-- 占位视图，使标题居中 -->
         <View
             android:layout_width="24dp"
             android:layout_height="24dp" />
 
     </LinearLayout>
 
-    <!-- 内容区域 - 确保可以滑动 -->
+    <!-- 底部确认按钮 -->
+    <Button
+        android:id="@+id/btn_save"
+        android:layout_width="289dp"
+        android:layout_height="51dp"
+        android:text="确认"
+        android:textSize="18sp"
+        android:textColor="#FFFFFF"
+        android:background="@drawable/purple_button_background"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="80dp"
+        android:textStyle="normal" />
+
+    <!-- 内容区域 -->
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
+        android:layout_height="match_parent"
+        android:layout_below="@id/top_bar"
+        android:layout_above="@id/btn_save"
         android:background="@android:color/transparent"
         android:fillViewport="true"
         android:scrollbars="vertical"
@@ -67,13 +81,11 @@
                 android:paddingTop="40dp"
                 android:paddingBottom="30dp">
 
-                <!-- 头像容器 -->
                 <FrameLayout
                     android:layout_width="100dp"
                     android:layout_height="100dp"
                     android:background="@android:color/transparent">
 
-                    <!-- 用户头像 -->
                     <ImageView
                         android:id="@+id/iv_avatar"
                         android:layout_width="100dp"
@@ -81,8 +93,8 @@
                         android:scaleType="centerCrop"
                         android:background="@drawable/circle_border" />
 
-                    <!-- 编辑图标 -->
                     <ImageView
+                        android:id="@+id/btn_edit_avatar"
                         android:layout_width="30dp"
                         android:layout_height="30dp"
                         android:src="@android:drawable/ic_menu_camera"
@@ -98,43 +110,22 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:background="@android:color/transparent"
                 android:paddingBottom="25dp">
-
                 <TextView
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="昵称"
                     android:textColor="#333333"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     android:paddingBottom="8dp" />
-
                 <EditText
                     android:id="@+id/et_name"
                     android:layout_width="match_parent"
                     android:layout_height="50dp"
-                    android:text=""
-                    android:textSize="14sp"
-                    android:background="@drawable/edit_text_background"
-                    android:paddingHorizontal="16dp"
-                    android:gravity="center_vertical"
-                    android:textColor="#333333"
                     android:hint="请输入昵称"
-                    android:textColorHint="#999999"
-                    android:maxLines="1" />
-
-                <!-- 添加错误提示 -->
-                <TextView
-                    android:id="@+id/tv_username_error"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text=""
-                    android:textColor="@color/red"
-                    android:textSize="12sp"
-                    android:paddingTop="4dp"
-                    android:visibility="gone" />
-
+                    android:background="@drawable/edit_text_background"
+                    android:paddingHorizontal="16dp" />
             </LinearLayout>
 
             <!-- 性别选择区域 -->
@@ -142,121 +133,118 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:background="@android:color/transparent"
                 android:paddingBottom="25dp">
-
                 <TextView
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="性别"
                     android:textColor="#333333"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     android:paddingBottom="8dp" />
-
-                <!-- 性别选择按钮组 -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="50dp"
                     android:orientation="horizontal"
                     android:background="@drawable/edit_text_background"
-                    android:gravity="center_vertical"
-                    android:paddingHorizontal="16dp">
-
-                    <!-- 女性按钮 -->
+                    android:gravity="center_vertical">
                     <LinearLayout
                         android:id="@+id/ll_female"
                         android:layout_width="0dp"
-                        android:layout_height="wrap_content"
+                        android:layout_height="match_parent"
                         android:layout_weight="1"
-                        android:orientation="horizontal"
-                        android:gravity="center"
-                        android:paddingVertical="8dp">
-
+                        android:gravity="center">
                         <ImageView
-                            android:id="@+id/iv_female"
                             android:layout_width="20dp"
                             android:layout_height="20dp"
                             android:src="@drawable/ic_female"
-                            android:layout_marginEnd="8dp" />
-
+                            android:layout_marginEnd="8dp"/>
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="女"
-                            android:textColor="#333333"
-                            android:textSize="14sp" />
-
+                            android:text="女"/>
                     </LinearLayout>
-
-                    <!-- 分隔线 -->
-                    <View
-                        android:layout_width="1dp"
-                        android:layout_height="20dp"
-                        android:background="#E5E5E5"
-                        android:layout_marginHorizontal="10dp" />
-
-                    <!-- 男性按钮 -->
+                    <View android:layout_width="1dp" android:layout_height="20dp" android:background="#E5E5E5"/>
                     <LinearLayout
                         android:id="@+id/ll_male"
                         android:layout_width="0dp"
-                        android:layout_height="wrap_content"
+                        android:layout_height="match_parent"
                         android:layout_weight="1"
-                        android:orientation="horizontal"
-                        android:gravity="center"
-                        android:paddingVertical="8dp">
-
+                        android:gravity="center">
                         <ImageView
-                            android:id="@+id/iv_male"
                             android:layout_width="20dp"
                             android:layout_height="20dp"
                             android:src="@drawable/ic_male"
-                            android:layout_marginEnd="8dp" />
-
+                            android:layout_marginEnd="8dp"/>
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="男"
-                            android:textColor="#333333"
-                            android:textSize="14sp" />
-
+                            android:text="男"/>
                     </LinearLayout>
-
-                    <!-- 分隔线 -->
-                    <View
-                        android:layout_width="1dp"
-                        android:layout_height="20dp"
-                        android:background="#E5E5E5"
-                        android:layout_marginHorizontal="10dp" />
-
-                    <!-- 保密按钮 -->
+                    <View android:layout_width="1dp" android:layout_height="20dp" android:background="#E5E5E5"/>
                     <LinearLayout
                         android:id="@+id/ll_unknown"
                         android:layout_width="0dp"
-                        android:layout_height="wrap_content"
+                        android:layout_height="match_parent"
                         android:layout_weight="1"
-                        android:orientation="horizontal"
-                        android:gravity="center"
-                        android:paddingVertical="8dp">
-
-                        <ImageView
-                            android:id="@+id/iv_unknown"
+                        android:gravity="center">
+                         <ImageView
                             android:layout_width="20dp"
                             android:layout_height="20dp"
                             android:src="@drawable/ic_unknown_gender"
-                            android:layout_marginEnd="8dp" />
-
+                            android:layout_marginEnd="8dp"/>
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="保密"
-                            android:textColor="#333333"
-                            android:textSize="14sp" />
-
+                            android:text="保密"/>
                     </LinearLayout>
-
                 </LinearLayout>
+            </LinearLayout>
 
+            <!-- [已新增] 地区编辑区域 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingBottom="25dp">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="地区"
+                    android:textColor="#333333"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:paddingBottom="8dp" />
+                <EditText
+                    android:id="@+id/et_region"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:hint="请输入地区"
+                    android:background="@drawable/edit_text_background"
+                    android:paddingHorizontal="16dp" />
+            </LinearLayout>
+
+            <!-- [已新增] 邮箱编辑区域 -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingBottom="25dp">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="邮箱"
+                    android:textColor="#333333"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:paddingBottom="8dp" />
+                <EditText
+                    android:id="@+id/et_email"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:hint="请输入邮箱"
+                    android:background="@drawable/edit_text_background"
+                    android:paddingHorizontal="16dp" />
             </LinearLayout>
 
             <!-- 个性签名编辑区域 -->
@@ -264,75 +252,34 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:background="@android:color/transparent"
                 android:paddingBottom="40dp">
-
                 <TextView
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="个性签名"
                     android:textColor="#333333"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     android:paddingBottom="8dp" />
-
                 <EditText
                     android:id="@+id/et_profile"
                     android:layout_width="match_parent"
                     android:layout_height="120dp"
                     android:gravity="top"
-                    android:text=""
-                    android:textSize="14sp"
+                    android:hint="请输入个性签名"
                     android:background="@drawable/edit_text_background"
                     android:paddingHorizontal="16dp"
-                    android:paddingVertical="12dp"
-                    android:textColor="#333333"
-                    android:hint="请输入个性签名"
-                    android:textColorHint="#999999"
-                    android:maxLines="4" />
-
-                <!-- 字符计数 -->
-                <LinearLayout
+                    android:paddingVertical="12dp" />
+                <TextView
+                    android:id="@+id/tv_char_count"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
                     android:gravity="end"
-                    android:background="@android:color/transparent"
-                    android:paddingTop="8dp">
-
-                    <TextView
-                        android:id="@+id/tv_char_count"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="0/20"
-                        android:textSize="12sp"
-                        android:textColor="#666666" />
-
-                </LinearLayout>
-
+                    android:text="0/20" />
             </LinearLayout>
-
-            <!-- 添加一些空白空间，确保可以滑动 -->
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="200dp"
-                android:background="@android:color/transparent" />
 
         </LinearLayout>
 
     </ScrollView>
 
-    <!-- 底部确认按钮 -->
-    <Button
-        android:id="@+id/btn_save"
-        android:layout_width="289dp"
-        android:layout_height="51dp"
-        android:text="确认"
-        android:textSize="18sp"
-        android:textColor="#FFFFFF"
-        android:background="@drawable/purple_button_background"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginBottom="80dp"
-        android:textStyle="normal" />
-
-</LinearLayout>
+</RelativeLayout>

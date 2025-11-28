@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <network-security-config>
-    <!-- 允许对特定域名或IP进行明文通信 (仅用于开发测试) -->
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+    
+    <!-- [已修复] 重新添加例外规则，以允许与后端服务器进行临时的HTTP明文通信 -->
     <domain-config cleartextTrafficPermitted="true">
         <domain includeSubdomains="true">120.79.169.214</domain>
-        <!-- 如果你的后端还有其他域名或IP，也请添加 -->
-        <!-- <domain includeSubdomains="true">your-backend-domain.com</domain> -->
     </domain-config>
-
-    <!-- 或者，允许所有域名进行明文通信 (不推荐，仅用于开发测试) -->
-    <!--
-    <base-config cleartextTrafficPermitted="true" />
-    -->
+    
 </network-security-config>

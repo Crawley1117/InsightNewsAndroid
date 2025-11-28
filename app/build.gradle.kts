@@ -1,9 +1,6 @@
-// 新增一些依赖以及dataBinding
-// app/build.gradle.kts
 plugins {
-    alias(libs.plugins.android.application) // 使用 alias 引用 Android 插件
-    alias(libs.plugins.jetbrains.kotlin.android) // 使用 alias 引用 Kotlin 插件，注意别名是 jetbrains-kotlin-android
-    // ...
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.jetbrains.kotlin.android)
 }
 
 android {
@@ -43,37 +40,42 @@ android {
 }
 
 dependencies {
-
+    // AndroidX & Core
     implementation(libs.appcompat)
-    implementation(libs.material)
     implementation(libs.constraintlayout)
     implementation(libs.lifecycle.livedata.ktx)
     implementation(libs.lifecycle.viewmodel.ktx)
     implementation(libs.navigation.fragment)
     implementation(libs.navigation.ui)
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.ext.junit)
-    androidTestImplementation(libs.espresso.core)
 
-    implementation("com.github.bumptech.glide:glide:4.16.0")
-    annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
+    // Material Design
+    implementation(libs.material) // 保留这个，它会使用版本目录中定义的版本
 
-    implementation ("androidx.room:room-runtime:2.6.1")
-    annotationProcessor ("androidx.room:room-compiler:2.6.1")
-
-    implementation("com.google.code.gson:gson:2.10.1")
-
-    implementation("com.squareup.okhttp3:okhttp:4.12.0") // 选择一个较新的稳定版本
-
-    // 新增：Retrofit
-    implementation("com.squareup.retrofit2:retrofit:2.11.0")
-    implementation("com.squareup.retrofit2:converter-gson:2.11.0")
-
-    //新增
-    implementation("com.google.android.material:material:1.10.0")
+    // UI Components
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
     implementation("androidx.recyclerview:recyclerview:1.3.2")
     implementation("androidx.viewpager2:viewpager2:1.0.0")
-    implementation("com.google.code.gson:gson:2.10.1")
     implementation("androidx.cardview:cardview:1.0.0")
+
+    // Networking
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.11.0")
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+
+    // Image Loading
+    implementation("com.github.bumptech.glide:glide:4.16.0")
+    annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
+
+    // Database
+    implementation("androidx.room:room-runtime:2.6.1")
+    annotationProcessor("androidx.room:room-compiler:2.6.1")
+
+    // JSON Serialization
+    implementation("com.google.code.gson:gson:2.10.1")
+
+    // Testing
+    testImplementation(libs.junit)
+    androidTestImplementation(libs.ext.junit)
+    androidTestImplementation(libs.espresso.core)
 }

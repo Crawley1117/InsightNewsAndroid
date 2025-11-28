@@ -280,7 +280,8 @@ public class Topic {
         }
 
         List<Comment> sortedComments = new ArrayList<>(this.comments);
-        sortedComments.sort((c1, c2) -> Long.compare(c2.getTimestamp(), c1.getTimestamp()));
+        // [已修复] 按 createdAt 字符串排序
+        sortedComments.sort((c1, c2) -> c2.getCreatedAt().compareTo(c1.getCreatedAt()));
 
         if (limit > 0 && limit < sortedComments.size()) {
             return sortedComments.subList(0, limit);
