@@ -1,0 +1,24 @@
+<!-- res/drawable/ic_mascot_bingxj.xml -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="100"
+    android:viewportHeight="100">
+    <!-- 冰块身体 -->
+    <path
+        android:fillColor="#E0F7FA"
+        android:pathData="M20,30 Q50,10 80,30 L80,70 Q50,90 20,70 Z" />
+    <!-- 左眼 -->
+    <path
+        android:fillColor="#333333"
+        android:pathData="M40,45 C40,45 42,48 45,48 C48,48 50,45 50,45 Z" />
+    <!-- 右眼 -->
+    <path
+        android:fillColor="#333333"
+        android:pathData="M60,45 C60,45 62,48 65,48 C68,48 70,45 70,45 Z" />
+    <!-- 嘴巴 -->
+    <path
+        android:strokeColor="#333333"
+        android:strokeWidth="2"
+        android:pathData="M45,60 Q50,65 55,60" />
+</vector>

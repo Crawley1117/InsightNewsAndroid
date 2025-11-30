@@ -1,0 +1,24 @@
+<!-- res/drawable/ic_logo_vector.xml -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="200dp"
+    android:height="200dp"
+    android:viewportWidth="100"
+    android:viewportHeight="100">
+
+    <!-- 上半部分：青色冰山/眼睛 -->
+    <path
+        android:fillColor="#00BCD4"
+        android:pathData="M30,20 L50,10 L70,20 L80,30 L60,40 L40,30 Z" />
+
+    <!-- 下半部分：深蓝冰山 -->
+    <path
+        android:fillColor="#2196F3"
+        android:pathData="M40,60 L60,60 L70,80 L50,90 L30,80 Z" />
+
+    <!-- 中间横线（象征新闻/连接） -->
+    <path
+        android:strokeColor="#0097A7"
+        android:strokeWidth="2"
+        android:pathData="M20,50 L80,50" />
+
+</vector>

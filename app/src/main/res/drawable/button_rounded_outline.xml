@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <stroke
+        android:width="1dp"
+        android:color="?attr/colorOnSurface" /> <!-- 边框颜色，使用主题中的 surface 上的前景色 -->
+    <corners android:radius="8dp" /> <!-- 圆角 -->
+    <solid android:color="@android:color/transparent" /> <!-- 透明背景 -->
+</shape>

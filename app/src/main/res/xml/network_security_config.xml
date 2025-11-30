@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+    
+    <!-- [已修复] 重新添加例外规则，以允许与后端服务器进行临时的HTTP明文通信 -->
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">120.79.169.214</domain>
+    </domain-config>
+    
+</network-security-config>
