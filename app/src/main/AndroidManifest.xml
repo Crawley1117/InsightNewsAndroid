@@ -8,53 +8,54 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
     <application
-        android:allowBackup="true"
-        android:dataExtractionRules="@xml/data_extraction_rules"
-        android:fullBackupContent="@xml/backup_rules"
-        android:icon="@mipmap/ic_launcher"
-        android:label="@string/app_name"
-        android:networkSecurityConfig="@xml/network_security_config"
-        android:roundIcon="@mipmap/ic_launcher_round"
-        android:supportsRtl="true"
-        android:theme="@style/Theme.InsightNewsAndroid">
+        android:name=".InsightNewsApplication"
+    android:allowBackup="true"
+    android:dataExtractionRules="@xml/data_extraction_rules"
+    android:fullBackupContent="@xml/backup_rules"
+    android:icon="@mipmap/ic_launcher"
+    android:label="@string/app_name"
+    android:networkSecurityConfig="@xml/network_security_config"
+    android:roundIcon="@mipmap/ic_launcher_round"
+    android:supportsRtl="true"
+    android:theme="@style/Theme.InsightNewsAndroid">
 
-        <provider
-            android:name="androidx.core.content.FileProvider"
-            android:authorities="${applicationId}.fileprovider"
-            android:exported="false"
-            android:grantUriPermissions="true">
-            <meta-data
-                android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/file_paths" />
-        </provider>
+    <provider
+        android:name="androidx.core.content.FileProvider"
+        android:authorities="${applicationId}.fileprovider"
+        android:exported="false"
+        android:grantUriPermissions="true">
+        <meta-data
+            android:name="android.support.FILE_PROVIDER_PATHS"
+            android:resource="@xml/file_paths" />
+    </provider>
 
-        <activity android:name=".SplashActivity" android:exported="true" android:theme="@style/Theme.InsightNewsAndroid">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
+    <activity android:name=".SplashActivity" android:exported="true" android:theme="@style/Theme.InsightNewsAndroid">
+        <intent-filter>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent-filter>
+    </activity>
 
-        <activity android:name=".auth.WelcomeActivity" android:exported="false" android:label="@string/app_name" />
-        <activity android:name=".MainActivity" android:exported="false" android:theme="@style/Theme.InsightNewsAndroid.NoActionBar" />
-        <activity android:name=".HistoryActivity" android:exported="false" android:theme="@style/Theme.InsightNewsAndroid.NoActionBar" />
-        <activity android:name=".ReportDetailActivity" android:exported="false" android:theme="@style/Theme.InsightNewsAndroid.NoActionBar" />
-        <activity android:name=".auth.LoginActivity" android:exported="false" />
-        <activity android:name=".auth.RegisterActivity" android:exported="false" />
-        <activity android:name=".EnhancedReportActivity" android:exported="false" android:theme="@style/Theme.InsightNewsAndroid.NoActionBar" />
-        <activity android:name=".ui.profile.EditProfileActivity" android:exported="false" android:theme="@style/Theme.InsightNewsAndroid.NoActionBar" />
-        <activity android:name=".ui.profile.NewsCollectionActivity" android:exported="false" android:theme="@style/Theme.InsightNewsAndroid.NoActionBar" />
-        <activity android:name=".ui.detail.DetailTopicActivity" android:exported="false" android:theme="@style/Theme.InsightNewsAndroid.NoActionBar" android:windowSoftInputMode="adjustResize|stateHidden" android:screenOrientation="portrait" />
-        <activity android:name=".ui.profile.TopicCollectionActivity" android:exported="false" android:theme="@style/Theme.InsightNewsAndroid.NoActionBar" />
+    <activity android:name=".auth.WelcomeActivity" android:exported="false" android:label="@string/app_name" />
+    <activity android:name=".MainActivity" android:exported="false" android:theme="@style/Theme.InsightNewsAndroid.NoActionBar" />
+    <activity android:name=".HistoryActivity" android:exported="false" android:theme="@style/Theme.InsightNewsAndroid.NoActionBar" />
+    <activity android:name=".ReportDetailActivity" android:exported="false" android:theme="@style/Theme.InsightNewsAndroid.NoActionBar" />
+    <activity android:name=".auth.LoginActivity" android:exported="false" />
+    <activity android:name=".auth.RegisterActivity" android:exported="false" />
+    <activity android:name=".EnhancedReportActivity" android:exported="false" android:theme="@style/Theme.InsightNewsAndroid.NoActionBar" />
+    <activity android:name=".ui.profile.EditProfileActivity" android:exported="false" android:theme="@style/Theme.InsightNewsAndroid.NoActionBar" />
+    <activity android:name=".ui.profile.NewsCollectionActivity" android:exported="false" android:theme="@style/Theme.InsightNewsAndroid.NoActionBar" />
+    <activity android:name=".ui.detail.DetailTopicActivity" android:exported="false" android:theme="@style/Theme.InsightNewsAndroid.NoActionBar" android:windowSoftInputMode="adjustResize|stateHidden" android:screenOrientation="portrait" />
+    <activity android:name=".ui.profile.TopicCollectionActivity" android:exported="false" android:theme="@style/Theme.InsightNewsAndroid.NoActionBar" />
 
-        <activity android:name=".ui.search.SearchActivity" android:exported="false" android:theme="@style/Theme.InsightNewsAndroid.NoActionBar" />
-        <activity android:name=".ui.search.SearchResultsActivity" android:exported="false" android:theme="@style/Theme.InsightNewsAndroid.NoActionBar" />
+    <activity android:name=".ui.search.SearchActivity" android:exported="false" android:theme="@style/Theme.InsightNewsAndroid.NoActionBar" />
+    <activity android:name=".ui.search.SearchResultsActivity" android:exported="false" android:theme="@style/Theme.InsightNewsAndroid.NoActionBar" />
 
-        <!-- [已增加] 注册所有新创建 -->
-        <activity android:name=".ui.guardian.GuardianActivity" android:exported="false" />
-        <activity android:name=".ui.guardian.LingxinActivity" android:exported="false" />
-        <activity android:name=".ui.guardian.NuanyangActivity" android:exported="false" />
+    <!-- [已增加] 注册所有新创建 -->
+    <activity android:name=".ui.guardian.GuardianActivity" android:exported="false" />
+    <activity android:name=".ui.guardian.LingxinActivity" android:exported="false" />
+    <activity android:name=".ui.guardian.NuanyangActivity" android:exported="false" />
 
-    </application>
+</application>
 
-</manifest>
+    </manifest>

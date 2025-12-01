@@ -109,7 +109,7 @@ public class CredibilityFragment extends Fragment {
                         // 处理选中的图片 URI
                         String imagePath = getRealPathFromUri(uri);
                         if (imagePath != null) {
-                            // 调用 ViewModel 上传图片
+                            // 调用 ViewModel 上传图片 (调用公共方法)
                             viewModel.addUserMessageWithImage(imagePath);
                         } else {
                             Toast.makeText(requireContext(), "无法获取图片路径", Toast.LENGTH_SHORT).show();
@@ -123,7 +123,7 @@ public class CredibilityFragment extends Fragment {
                     if (result.getResultCode() == getActivity().RESULT_OK) {
                         // 拍照成功，photoFile 应该包含图片路径
                         if (photoFile != null && photoFile.exists()) {
-                            // 调用 ViewModel 上传图片
+                            // 调用 ViewModel 上传图片 (调用公共方法)
                             viewModel.addUserMessageWithImage(photoFile.getAbsolutePath());
                         } else {
                             Toast.makeText(requireContext(), "拍照失败或图片不存在", Toast.LENGTH_SHORT).show();

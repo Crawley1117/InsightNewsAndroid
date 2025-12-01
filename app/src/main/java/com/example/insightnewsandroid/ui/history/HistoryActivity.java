@@ -1,11 +1,10 @@
-// File: app/java/com/example/insightnewsandroid/HistoryActivity.java
-
 package com.example.insightnewsandroid;
 
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.SearchView;
@@ -18,13 +17,22 @@ import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.insightnewsandroid.auth.AuthRepository;
+import com.example.insightnewsandroid.data.manager.ApiManager;
+import com.example.insightnewsandroid.data.model.BaseResponse;
+import com.example.insightnewsandroid.data.model.DetectionHistoryItem;
 import com.example.insightnewsandroid.db.AppDatabase;
 import com.example.insightnewsandroid.db.DetectionRecordEntity;
 import com.example.insightnewsandroid.ui.history.HistoryAdapter;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class HistoryActivity extends AppCompatActivity {
 
@@ -34,6 +42,8 @@ public class HistoryActivity extends AppCompatActivity {
     private AppDatabase db;
     private ExecutorService executor = Executors.newSingleThreadExecutor();
     private Handler mainHandler = new Handler(Looper.getMainLooper());
+
+    private AuthRepository authRepo;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,14 +60,15 @@ public class HistoryActivity extends AppCompatActivity {
         recyclerView = findViewById(R.id.recyclerView);
 
         db = AppDatabase.getDatabase(this);
-        setupRecyclerView();
-        loadAllRecords();
+        authRepo = new AuthRepository(this);
 
-        // --- 添加滑动删除功能 ---
+        setupRecyclerView();
+        loadAllRecordsFromNetwork();
+
         ItemTouchHelper.SimpleCallback simpleItemTouchCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
             @Override
             public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
-                return false; // 不处理拖拽移动
+                return false;
             }
 
             @Override
@@ -65,25 +76,19 @@ public class HistoryActivity extends AppCompatActivity {
                 int position = viewHolder.getAdapterPosition();
                 DetectionRecordEntity record = adapter.getCurrentList().get(position);
 
-                // 弹出确认对话框
                 new AlertDialog.Builder(HistoryActivity.this)
-                        .setTitle("删除记录")
-                        .setMessage("确定要删除这条记录吗？\n" + record.title)
+                        .setTitle("删除本地记录")
+                        .setMessage("确定要删除这条本地记录吗？\n" + record.title)
                         .setPositiveButton("删除", (dialog, which) -> {
-                            // 执行删除操作
                             executor.execute(() -> {
-                                db.detectionDao().deleteById(record.id); // 根据 ID 删除
+                                db.detectionDao().deleteById(record.id);
                                 mainHandler.post(() -> {
-                                    // 刷新 UI，适配器会自动处理 DiffUtil
-                                    // loadAllRecords(); // 或者 adapter.notifyItemRemoved(position);
-                                    // 重新加载以确保 UI 与数据库同步
-                                    loadAllRecords();
-                                    Toast.makeText(HistoryActivity.this, "记录已删除", Toast.LENGTH_SHORT).show();
+                                    loadAllRecordsFromNetwork();
+                                    Toast.makeText(HistoryActivity.this, "本地记录已删除", Toast.LENGTH_SHORT).show();
                                 });
                             });
                         })
                         .setNegativeButton("取消", (dialog, which) -> {
-                            // 取消删除，刷新 UI 以恢复被滑动的项
                             adapter.notifyItemChanged(position);
                             dialog.dismiss();
                         })
@@ -93,21 +98,20 @@ public class HistoryActivity extends AppCompatActivity {
 
         ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleItemTouchCallback);
         itemTouchHelper.attachToRecyclerView(recyclerView);
-        // --- 滑动删除功能结束 ---
 
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                searchRecords(query);
+                searchRecordsLocally(query);
                 return true;
             }
 
             @Override
             public boolean onQueryTextChange(String newText) {
                 if (TextUtils.isEmpty(newText)) {
-                    loadAllRecords();
+                    loadAllRecordsFromNetwork();
                 } else {
-                    searchRecords(newText);
+                    searchRecordsLocally(newText);
                 }
                 return true;
             }
@@ -120,73 +124,72 @@ public class HistoryActivity extends AppCompatActivity {
         recyclerView.setAdapter(adapter);
     }
 
-    private void loadAllRecords() {
-        executor.execute(() -> {
-            List<DetectionRecordEntity> records = db.detectionDao().getAllRecords();
-            mainHandler.post(() -> adapter.submitList(records));
+    private void loadAllRecordsFromNetwork() {
+        String token = authRepo.getAuthToken();
+        if (token == null || token.isEmpty()) {
+            Toast.makeText(this, "用户未登录", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Call<BaseResponse<List<DetectionHistoryItem>>> call = ApiManager.getAuthService().getDetectionHistory("Bearer " + token);
+        call.enqueue(new Callback<BaseResponse<List<DetectionHistoryItem>>>() {
+            @Override
+            public void onResponse(Call<BaseResponse<List<DetectionHistoryItem>>> call, Response<BaseResponse<List<DetectionHistoryItem>>> response) {
+                if (response.isSuccessful()) {
+                    BaseResponse<List<DetectionHistoryItem>> baseResponse = response.body();
+                    if (baseResponse != null && baseResponse.isSuccess()) {
+                        List<DetectionHistoryItem> networkRecords = baseResponse.getData();
+                        if (networkRecords != null) {
+                            List<DetectionRecordEntity> localEntities = new ArrayList<>();
+                            for (DetectionHistoryItem item : networkRecords) {
+                                DetectionRecordEntity entity = new DetectionRecordEntity();
+                                entity.title = item.getContentPreview();
+                                entity.detectionDate = System.currentTimeMillis();
+                                entity.fullText = item.getContentPreview();
+                                entity.fullReport = "待获取详细报告...";
+                                entity.credibilityLevel = item.getResult();
+                                entity.suspiciousSpansJson = "[]";
+                                localEntities.add(entity);
+                            }
+                            mainHandler.post(() -> adapter.submitList(localEntities));
+                        } else {
+                            mainHandler.post(() -> adapter.submitList(new ArrayList<>()));
+                        }
+                    } else {
+                        String msg = (baseResponse != null) ? baseResponse.getMsg() : "未知错误";
+                        Log.e("HistoryActivity", "获取历史记录失败: " + msg);
+                        Toast.makeText(HistoryActivity.this, "获取历史记录失败: " + msg, Toast.LENGTH_SHORT).show();
+                        mainHandler.post(() -> adapter.submitList(new ArrayList<>()));
+                    }
+                } else {
+                    Log.e("HistoryActivity", "获取历史记录失败. HTTP code: " + response.code());
+                    Toast.makeText(HistoryActivity.this, "获取历史记录失败: " + response.code(), Toast.LENGTH_SHORT).show();
+                    mainHandler.post(() -> adapter.submitList(new ArrayList<>()));
+                }
+            }
+
+            @Override
+            public void onFailure(Call<BaseResponse<List<DetectionHistoryItem>>> call, Throwable t) {
+                Log.e("HistoryActivity", "获取历史记录失败", t);
+                Toast.makeText(HistoryActivity.this, "网络错误: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                mainHandler.post(() -> adapter.submitList(new ArrayList<>()));
+            }
         });
     }
 
-    private void searchRecords(String query) {
+    private void searchRecordsLocally(String query) {
         executor.execute(() -> {
             List<DetectionRecordEntity> records = db.detectionDao().searchRecords(query.trim());
             mainHandler.post(() -> adapter.submitList(records));
         });
     }
 
-    // --- 添加菜单项 ---
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.history_menu, menu); // 加载菜单资源
-        return true;
-    }
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-
-        if (id == android.R.id.home) {
-            finish();
-            return true;
-        } else if (id == R.id.action_clear_history) { // 确保 ID 与 menu 文件中一致
-            showClearConfirmationDialog();
+        if (item.getItemId() == android.R.id.home) {
+            onBackPressed();
             return true;
         }
-
         return super.onOptionsItemSelected(item);
-    }
-    // --- 菜单项添加结束 ---
-
-    // --- 清理确认对话框 ---
-    private void showClearConfirmationDialog() {
-        new AlertDialog.Builder(this)
-                .setTitle("清空历史记录")
-                .setMessage("确定要清空所有历史记录吗？此操作不可撤销。")
-                .setPositiveButton("清空", (dialog, which) -> clearAllRecords())
-                .setNegativeButton("取消", null) // null 表示点击取消按钮时对话框自动关闭
-                .show();
-    }
-
-    private void clearAllRecords() {
-        executor.execute(() -> {
-            db.detectionDao().deleteAllRecords(); // 调用 DAO 方法清空所有记录
-            mainHandler.post(() -> {
-                loadAllRecords(); // 重新加载 UI，此时列表应为空
-                Toast.makeText(HistoryActivity.this, "历史记录已清空", Toast.LENGTH_SHORT).show();
-            });
-        });
-    }
-    // --- 清理功能结束 ---
-
-    @Override
-    public boolean onSupportNavigateUp() {
-        finish();
-        return true;
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        executor.shutdown();
     }
 }
