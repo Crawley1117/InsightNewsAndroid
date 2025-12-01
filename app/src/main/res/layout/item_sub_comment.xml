@@ -1,51 +1,82 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
-    android:paddingTop="8dp"
-    android:paddingBottom="8dp">
+    android:paddingTop="8dp">
 
-    <!-- [已修复] 使用标准的CardView和ImageView实现圆形头像，不再依赖第三方库 -->
-    <androidx.cardview.widget.CardView
-        android:layout_width="24dp"
-        android:layout_height="24dp"
-        app:cardCornerRadius="12dp"
-        app:cardElevation="0dp">
-
-        <ImageView
-            android:id="@+id/iv_user_avatar"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:scaleType="centerCrop"
-            android:src="@drawable/ic_default_avatar" />
-
-    </androidx.cardview.widget.CardView>
+    <ImageView
+        android:id="@+id/ivUserAvatar"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        tools:src="@tools:sample/avatars" />
 
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:orientation="vertical"
-        android:layout_marginStart="8dp">
+        android:layout_marginStart="8dp"
+        android:orientation="vertical">
 
         <TextView
-            android:id="@+id/tv_username"
+            android:id="@+id/tvUsername"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="用户名"
-            android:textColor="@color/text_secondary"
-            android:textSize="12sp" />
+            android:textColor="@android:color/black"
+            android:textStyle="bold"
+            tools:text="回复者用户名" />
 
         <TextView
-            android:id="@+id/tv_comment_content"
+            android:id="@+id/tvCommentContent"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="这是子评论内容。"
-            android:textColor="@color/text_primary"
-            android:textSize="14sp" />
+            android:layout_marginTop="4dp"
+            android:textColor="@android:color/black"
+            tools:text="这是一条回复内容。" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/tvSubCommentTimestamp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="10sp"
+                tools:text="刚刚" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+                
+            <ImageView
+                android:id="@+id/ivDeleteSubComment"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:src="@drawable/ic_delete"
+                android:visibility="gone"
+                tools:visibility="visible" />
+
+            <!-- [已新增] 子评论的点赞按钮和数量 -->
+            <ImageView
+                android:id="@+id/ivSubCommentLike"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:layout_marginStart="8dp"
+                android:src="@drawable/ic_like_selector" />
+
+            <TextView
+                android:id="@+id/tvSubCommentLikeCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:textSize="10sp"
+                tools:text="0" />
+        </LinearLayout>
 
     </LinearLayout>
-
 </LinearLayout>

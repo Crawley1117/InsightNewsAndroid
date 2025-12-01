@@ -28,7 +28,6 @@ public class SearchActivity extends AppCompatActivity {
     private AuthRepository authRepository;
     private String token;
 
-    // [已新增] 历史记录状态管理
     private List<String> fullHistoryList = new ArrayList<>();
     private boolean isHistoryExpanded = false;
     private static final int COLLAPSED_HISTORY_SIZE = 6;
@@ -51,8 +50,12 @@ public class SearchActivity extends AppCompatActivity {
 
         if (token != null && !token.isEmpty()) {
             viewModel.loadSearchHistory(token);
+            // [已修正] 传递token参数
+            viewModel.fetchHotSearchTerms(token);
+        } else {
+            // 如果未登录，显示提示
+            Toast.makeText(this, "请先登录", Toast.LENGTH_SHORT).show();
         }
-        viewModel.fetchHotSearchTerms(token);
     }
 
     private void initViews() {
@@ -60,7 +63,6 @@ public class SearchActivity extends AppCompatActivity {
         binding.tvSearch.setOnClickListener(v -> performSearch());
         binding.ivDeleteHistory.setOnClickListener(v -> showClearHistoryDialog());
         
-        // [已新增] 为展开/折叠箭头设置点击事件
         binding.ivExpandHistory.setOnClickListener(v -> {
             isHistoryExpanded = !isHistoryExpanded;
             updateHistoryChips();
@@ -119,7 +121,6 @@ public class SearchActivity extends AppCompatActivity {
         });
     }
 
-    // [已新增] 核心UI更新方法，处理展开/折叠逻辑
     private void updateHistoryChips() {
         boolean hasHistory = fullHistoryList != null && !fullHistoryList.isEmpty();
         binding.ivDeleteHistory.setVisibility(hasHistory ? View.VISIBLE : View.GONE);

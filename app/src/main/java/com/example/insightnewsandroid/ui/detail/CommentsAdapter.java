@@ -17,18 +17,19 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.ViewHo
 
     private List<Comment> comments;
     private final Context context;
+    private final int currentUserId;
     private OnCommentActionListener listener;
 
     public interface OnCommentActionListener {
-        void onLikeClick(int commentId);
+        void onLikeClick(int commentId, boolean isSubComment);
         void onReplyClick(int commentId, String username);
-        void onLoadRepliesClick(int parentCommentId);
-        void onDeleteClick(int commentId);
+        void onDeleteClick(int commentId, boolean isSubComment);
     }
 
-    public CommentsAdapter(List<Comment> comments, Context context) {
+    public CommentsAdapter(List<Comment> comments, Context context, int currentUserId) {
         this.comments = comments;
         this.context = context;
+        this.currentUserId = currentUserId;
     }
 
     public void setOnCommentActionListener(OnCommentActionListener listener) {
@@ -64,6 +65,7 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.ViewHo
 
     public class ViewHolder extends RecyclerView.ViewHolder {
         private final ItemCommentBinding binding;
+        private boolean isExpanded = false;
 
         ViewHolder(ItemCommentBinding binding) {
             super(binding.getRoot());
@@ -73,20 +75,19 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.ViewHo
         void bind(final Comment comment) {
             binding.tvUsername.setText(comment.getUsername());
             binding.tvCommentContent.setText(comment.getComment());
-            binding.tvTimestamp.setText(comment.getCreatedAt());
+            binding.tvTimestamp.setText(comment.getCreatedAt()); // [已修复] 恢复父评论时间戳
             binding.tvLikeCount.setText(String.valueOf(comment.getLikeCount()));
             binding.ivLike.setSelected(comment.isLike());
 
             Glide.with(context).load(comment.getUserImg()).placeholder(R.drawable.ic_default_avatar).into(binding.ivUserAvatar);
 
-            // [已修改] 根据 myComment 字段显示/隐藏删除按钮
-            binding.ivDeleteComment.setVisibility(comment.isMyComment() ? View.VISIBLE : View.GONE);
+            binding.ivDeleteComment.setVisibility(comment.getUserId() == currentUserId ? View.VISIBLE : View.GONE);
             binding.ivDeleteComment.setOnClickListener(v -> {
-                if(listener != null) listener.onDeleteClick(comment.getId());
+                if(listener != null) listener.onDeleteClick(comment.getId(), false);
             });
 
             binding.ivLike.setOnClickListener(v -> {
-                if (listener != null) listener.onLikeClick(comment.getId());
+                if (listener != null) listener.onLikeClick(comment.getId(), false);
             });
 
             binding.ivReply.setOnClickListener(v -> {
@@ -96,39 +97,59 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.ViewHo
             updateSubCommentsUI(comment);
         }
 
-        private void updateSubCommentsUI(Comment comment) {
-            binding.subCommentsContainer.removeAllViews();
-            
+        private void updateSubCommentsUI(final Comment comment) {
             List<Comment> children = comment.getChildren();
-            boolean hasLoadedChildren = children != null && !children.isEmpty();
+            boolean hasChildren = children != null && !children.isEmpty();
 
-            if (hasLoadedChildren) {
+            if (!hasChildren) {
+                binding.tvExpandReplies.setVisibility(View.GONE);
+                binding.subCommentsContainer.setVisibility(View.GONE);
+                return;
+            }
+
+            binding.tvExpandReplies.setVisibility(View.VISIBLE);
+            binding.subCommentsContainer.removeAllViews();
+
+            if (isExpanded) {
                 for (Comment child : children) {
                     binding.subCommentsContainer.addView(createSubCommentView(child));
                 }
+                binding.subCommentsContainer.setVisibility(View.VISIBLE);
                 binding.tvExpandReplies.setText("收起回复");
             } else {
-                binding.tvExpandReplies.setText("查看回复");
+                binding.subCommentsContainer.addView(createSubCommentView(children.get(0)));
+                binding.subCommentsContainer.setVisibility(View.VISIBLE);
+                if (children.size() > 1) {
+                    binding.tvExpandReplies.setText(String.format("—— 查看另外 %d 条回复", children.size() - 1));
+                } else {
+                    binding.tvExpandReplies.setVisibility(View.GONE);
+                }
             }
-            
-            binding.tvExpandReplies.setVisibility(View.VISIBLE); 
 
             binding.tvExpandReplies.setOnClickListener(v -> {
-                if (listener != null) {
-                    if (hasLoadedChildren) {
-                        comment.setChildren(null);
-                        updateSubCommentsUI(comment);
-                    } else {
-                        listener.onLoadRepliesClick(comment.getId());
-                    }
-                }
+                isExpanded = !isExpanded;
+                updateSubCommentsUI(comment);
             });
         }
 
-        private View createSubCommentView(Comment subComment) {
+        private View createSubCommentView(final Comment subComment) {
             ItemSubCommentBinding subBinding = ItemSubCommentBinding.inflate(LayoutInflater.from(context));
             subBinding.tvUsername.setText(subComment.getUsername());
             subBinding.tvCommentContent.setText(subComment.getComment());
+            subBinding.tvSubCommentTimestamp.setText(subComment.getCreatedAt()); // [已修复] 恢复子评论时间戳
+            
+            subBinding.tvSubCommentLikeCount.setText(String.valueOf(subComment.getLikeCount()));
+            subBinding.ivSubCommentLike.setSelected(subComment.isLike());
+            subBinding.ivDeleteSubComment.setVisibility(subComment.getUserId() == currentUserId ? View.VISIBLE : View.GONE);
+
+            subBinding.ivSubCommentLike.setOnClickListener(v -> {
+                if (listener != null) listener.onLikeClick(subComment.getId(), true);
+            });
+
+            subBinding.ivDeleteSubComment.setOnClickListener(v -> {
+                if(listener != null) listener.onDeleteClick(subComment.getId(), true);
+            });
+
             Glide.with(context).load(subComment.getUserImg()).placeholder(R.drawable.ic_default_avatar).into(subBinding.ivUserAvatar);
             return subBinding.getRoot();
         }

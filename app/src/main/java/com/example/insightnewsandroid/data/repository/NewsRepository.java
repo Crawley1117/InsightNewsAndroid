@@ -2,12 +2,11 @@ package com.example.insightnewsandroid.data.repository;
 
 import com.example.insightnewsandroid.data.model.ApiResponse;
 import com.example.insightnewsandroid.data.model.Comment;
-import com.example.insightnewsandroid.data.model.LoginResponse;
 import com.example.insightnewsandroid.data.model.NewsArticle;
-import com.example.insightnewsandroid.data.model.QuizQuestion;
 import com.example.insightnewsandroid.data.model.User;
-import com.example.insightnewsandroid.data.remote.ApiService;
-import com.example.insightnewsandroid.data.remote.RetrofitClient;
+import com.example.insightnewsandroid.data.model.QuizQuestion;
+import com.example.insightnewsandroid.data.remote.ApiClient;
+import com.example.insightnewsandroid.data.remote.NewsApiService;
 
 import java.util.List;
 
@@ -15,100 +14,110 @@ import okhttp3.MultipartBody;
 import retrofit2.Call;
 
 public class NewsRepository {
-    private final ApiService apiService;
 
-    public NewsRepository() {
-        this.apiService = RetrofitClient.getApiService();
-    }
+    private final NewsApiService newsApiService = ApiClient.getApiService();
 
-    // User Authentication
-    public Call<ApiResponse<LoginResponse>> login(User user) {
-        return apiService.login(user);
-    }
-
-    public Call<ApiResponse<Void>> register(User user) {
-        return apiService.register(user);
-    }
-
-    // User Profile
-    public Call<ApiResponse<User>> getProfile(String token) {
-        return apiService.getProfile(token);
-    }
-
-    public Call<ApiResponse<Void>> updateUser(String token, User user) {
-        return apiService.updateUser(token, user);
-    }
-
-    public Call<ApiResponse<List<String>>> getFavoriteTopics(String token) {
-        return apiService.getFavoriteTopics(token);
-    }
-
-    // News & Topics Articles
+    // 修改所有方法，移除 "Bearer " 前缀
     public Call<ApiResponse<List<NewsArticle>>> getHotTopics(String token, String category) {
-        return apiService.getHotTopics(token, category);
+        String finalCategory = (category == null || category.isEmpty() || "全部".equals(category)) ? null : category;
+        // [已修改] 直接使用 token，不添加 "Bearer " 前缀
+        String authHeader = (token == null || token.isEmpty()) ? null : token;
+        return newsApiService.getHotTopics(authHeader, finalCategory);
     }
 
     public Call<ApiResponse<NewsArticle>> getTopicDetails(String token, int topicId) {
-        return apiService.getTopicDetails(token, topicId);
+        // [已修改] 直接使用 token，不添加 "Bearer " 前缀
+        String authHeader = (token == null || token.isEmpty()) ? null : token;
+        return newsApiService.getTopicDetails(authHeader, topicId);
     }
 
     public Call<ApiResponse<Void>> toggleTopicFavorite(String token, int topicId) {
-        return apiService.toggleTopicFavorite(token, topicId);
+        // [已修改] 直接使用 token，不添加 "Bearer " 前缀
+        String authHeader = (token == null || token.isEmpty()) ? null : token;
+        return newsApiService.toggleTopicFavorite(authHeader, topicId);
     }
 
-    public Call<ApiResponse<List<String>>> getHotSearchTerms(String token) {
-        return apiService.getHotSearchTerms(token);
-    }
-
-    public Call<ApiResponse<List<NewsArticle>>> searchTopics(String token, String keyword) {
-        return apiService.searchTopics(token, keyword);
-    }
-
-    // Search History
-    public Call<ApiResponse<List<String>>> getSearchHistory(String token) {
-        return apiService.getSearchHistory(token);
-    }
-
-    public Call<ApiResponse<Void>> clearSearchHistory(String token) {
-        return apiService.clearSearchHistory(token);
-    }
-
-    // Comments
     public Call<ApiResponse<List<Comment>>> getComments(String token, String topicId, int page, int pagesize) {
-        return apiService.getComments(token, topicId, page, pagesize);
-    }
-
-    public Call<ApiResponse<List<Comment>>> getCommentReplies(String token, int commentId) {
-        return apiService.getCommentReplies(token, commentId);
+        // [已修改] 直接使用 token，不添加 "Bearer " 前缀
+        String authHeader = (token == null || token.isEmpty()) ? null : token;
+        return newsApiService.getComments(authHeader, topicId, page, pagesize);
     }
 
     public Call<ApiResponse<Void>> postComment(String token, String topicId, Comment comment) {
-        return apiService.postComment(token, topicId, comment);
+        // [已修改] 直接使用 token，不添加 "Bearer " 前缀
+        String authHeader = (token == null || token.isEmpty()) ? null : token;
+        return newsApiService.postComment(authHeader, topicId, comment);
     }
 
     public Call<ApiResponse<Void>> toggleCommentLike(String token, int commentId) {
-        return apiService.toggleCommentLike(token, commentId);
+        // [已修改] 直接使用 token，不添加 "Bearer " 前缀
+        String authHeader = (token == null || token.isEmpty()) ? null : token;
+        return newsApiService.toggleCommentLike(authHeader, commentId);
+    }
+
+    public Call<ApiResponse<List<Comment>>> getCommentReplies(String token, int commentId) {
+        // [已修改] 直接使用 token，不添加 "Bearer " 前缀
+        String authHeader = (token == null || token.isEmpty()) ? null : token;
+        return newsApiService.getCommentReplies(authHeader, commentId);
     }
 
     public Call<ApiResponse<Void>> deleteComment(String token, int commentId) {
-        return apiService.deleteComment(token, commentId);
+        // [已修改] 直接使用 token，不添加 "Bearer " 前缀
+        String authHeader = (token == null || token.isEmpty()) ? null : token;
+        return newsApiService.deleteComment(authHeader, commentId);
     }
 
-    // Quiz
     public Call<ApiResponse<List<QuizQuestion>>> getBingjianQuiz() {
-        return apiService.getBingjianQuiz();
+        return newsApiService.getBingjianQuiz();
     }
-    
+
     public Call<ApiResponse<List<QuizQuestion>>> getLingxinQuiz() {
-        return apiService.getLingxinQuiz();
+        return newsApiService.getLingxinQuiz();
     }
 
     public Call<ApiResponse<List<QuizQuestion>>> getNuanyangQuiz() {
-        return apiService.getNuanyangQuiz();
+        return newsApiService.getNuanyangQuiz();
     }
 
-    // 文件上传
+    public Call<ApiResponse<User>> getProfile(String token) {
+        // [已修改] 直接使用 token，不添加 "Bearer " 前缀
+        String authHeader = (token == null || token.isEmpty()) ? null : token;
+        return newsApiService.getProfile(authHeader);
+    }
+
     public Call<ApiResponse<String>> uploadFile(String token, MultipartBody.Part file) {
-        return apiService.uploadFile(token, file);
+        // [已修改] 直接使用 token，不添加 "Bearer " 前缀
+        String authHeader = (token == null || token.isEmpty()) ? null : token;
+        return newsApiService.uploadFile(authHeader, file);
+    }
+
+    public Call<ApiResponse<List<NewsArticle>>> getFavoriteTopics(String token) {
+        // [已修改] 直接使用 token，不添加 "Bearer " 前缀
+        String authHeader = (token == null || token.isEmpty()) ? null : token;
+        return newsApiService.getFavoriteTopics(authHeader);
+    }
+
+    // [已修改] 直接使用 token，不添加 "Bearer " 前缀
+    public Call<ApiResponse<List<String>>> getHotSearchTerms(String token) {
+        String authHeader = (token == null || token.isEmpty()) ? null : token;
+        return newsApiService.getHotSearchTerms(authHeader);
+    }
+
+    public Call<ApiResponse<List<String>>> getSearchHistory(String token) {
+        // [已修改] 直接使用 token，不添加 "Bearer " 前缀
+        String authHeader = (token == null || token.isEmpty()) ? null : token;
+        return newsApiService.getSearchHistory(authHeader);
+    }
+
+    public Call<ApiResponse<Void>> clearSearchHistory(String token) {
+        // [已修改] 直接使用 token，不添加 "Bearer " 前缀
+        String authHeader = (token == null || token.isEmpty()) ? null : token;
+        return newsApiService.clearSearchHistory(authHeader);
+    }
+
+    public Call<ApiResponse<List<NewsArticle>>> searchTopics(String token, String keyword) {
+        // [已修改] 直接使用 token，不添加 "Bearer " 前缀
+        String authHeader = (token == null || token.isEmpty()) ? null : token;
+        return newsApiService.searchTopics(authHeader, keyword);
     }
 }

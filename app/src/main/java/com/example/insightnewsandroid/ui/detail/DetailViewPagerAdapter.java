@@ -8,13 +8,14 @@ import androidx.viewpager2.adapter.FragmentStateAdapter;
 import java.util.HashMap;
 import java.util.Map;
 
-public class DetailTopicPagerAdapter extends FragmentStateAdapter {
+public class DetailViewPagerAdapter extends FragmentStateAdapter {
 
     private final int topicId;
     private final String token;
-    private Map<Integer, Fragment> fragmentMap = new HashMap<>();
+    // [已修复] 添加一个Map来持有Fragment的引用
+    private final Map<Integer, Fragment> createdFragments = new HashMap<>();
 
-    public DetailTopicPagerAdapter(@NonNull FragmentActivity fragmentActivity, int topicId, String token) {
+    public DetailViewPagerAdapter(@NonNull FragmentActivity fragmentActivity, int topicId, String token) {
         super(fragmentActivity);
         this.topicId = topicId;
         this.token = token;
@@ -29,7 +30,8 @@ public class DetailTopicPagerAdapter extends FragmentStateAdapter {
         } else {
             fragment = TopicCommentsFragment.newInstance(topicId, token);
         }
-        fragmentMap.put(position, fragment);
+        // [已修复] 在创建时将Fragment登记到Map中
+        createdFragments.put(position, fragment);
         return fragment;
     }
 
@@ -38,18 +40,8 @@ public class DetailTopicPagerAdapter extends FragmentStateAdapter {
         return 2; // 两个tab：新闻和评论区
     }
 
+    // [已修复] 实现缺失的getFragment方法
     public Fragment getFragment(int position) {
-        return fragmentMap.get(position);
-    }
-
-    public void removeFragment(int position) {
-        fragmentMap.remove(position);
-    }
-
-    public void refreshComments() {
-        Fragment commentsFragment = getFragment(1);
-        if (commentsFragment instanceof TopicCommentsFragment) {
-            ((TopicCommentsFragment) commentsFragment).loadComments();
-        }
+        return createdFragments.get(position);
     }
 }

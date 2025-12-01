@@ -21,11 +21,13 @@ public class Comment {
     @SerializedName("is_like")
     private boolean isLike;
     @SerializedName("my_comment")
-    private boolean myComment;
+    private boolean myComment; // This might be redundant if we compare userId
     @SerializedName("parentId")
     private int parentId;
     @SerializedName("status")
     private int status;
+    @SerializedName("reply_count") // [已新增] 回复数量
+    private int replyCount; 
     @SerializedName("children")
     private List<Comment> children;
 
@@ -54,4 +56,7 @@ public class Comment {
     public void setStatus(int status) { this.status = status; }
     public List<Comment> getChildren() { return children; }
     public void setChildren(List<Comment> children) { this.children = children; }
+    // [已新增] Getter for replyCount
+    public int getReplyCount() { return replyCount; }
+    public void setReplyCount(int replyCount) { this.replyCount = replyCount; }
 }

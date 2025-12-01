@@ -121,7 +121,7 @@ public class ProfileFragment extends Fragment {
                     updateUiWithUserData(user);
                 }
             } else {
-                String errorMsg = (apiResponse != null) ? apiResponse.getMessage() : "网络请求失败";
+                String errorMsg = (apiResponse != null) ? apiResponse.getMsg() : "网络请求失败";
                 Toast.makeText(getContext(), "加载用户信息失败: " + errorMsg, Toast.LENGTH_SHORT).show();
             }
         });

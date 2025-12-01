@@ -1,4 +1,3 @@
-
 package com.example.insightnewsandroid.data.remote;
 
 import okhttp3.OkHttpClient;
@@ -6,8 +5,8 @@ import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-public class RetrofitClient {
-    // [最终修正] 根据最新文档，更新为唯一正确的服务器IP地址
+public class ApiClient {
+
     private static final String BASE_URL = "http://120.79.169.214:8087/";
 
     private static Retrofit retrofit = null;

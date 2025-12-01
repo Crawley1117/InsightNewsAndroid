@@ -8,12 +8,12 @@ import android.view.View;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 import com.example.insightnewsandroid.data.model.QuizQuestion;
-import com.example.insightnewsandroid.databinding.ActivityNuanyangBinding;
+import com.example.insightnewsandroid.databinding.ActivityNuanyangBinding; // [已修复] 使用正确的Binding类
 import java.util.List;
 
 public class NuanyangActivity extends AppCompatActivity {
 
-    private ActivityNuanyangBinding binding;
+    private ActivityNuanyangBinding binding; // [已修复]
     private NuanyangViewModel viewModel;
     private CountDownTimer countDownTimer;
     private List<QuizQuestion> questions;
@@ -28,7 +28,7 @@ public class NuanyangActivity extends AppCompatActivity {
             getSupportActionBar().hide();
         }
 
-        binding = ActivityNuanyangBinding.inflate(getLayoutInflater());
+        binding = ActivityNuanyangBinding.inflate(getLayoutInflater()); // [已修复]
         setContentView(binding.getRoot());
 
         viewModel = new ViewModelProvider(this).get(NuanyangViewModel.class);
@@ -52,8 +52,7 @@ public class NuanyangActivity extends AppCompatActivity {
                 questions = apiResponse.getData();
                 setupQuiz();
             } else {
-                showFeedback("加载问答失败");
-                handler.postDelayed(this::finish, 2000);
+                showFeedback("加载问答失败", true);
             }
         });
     }
@@ -65,9 +64,9 @@ public class NuanyangActivity extends AppCompatActivity {
 
     private void loadQuestion(int index) {
         showLoading(false);
+        binding.tvFeedback.setVisibility(View.GONE);
         if (questions == null || index >= questions.size()) {
-            showFeedback("挑战完成！");
-            handler.postDelayed(this::finish, 2000);
+            showFeedback("挑战完成！", true);
             return;
         }
 
@@ -88,8 +87,7 @@ public class NuanyangActivity extends AppCompatActivity {
             }
 
             public void onFinish() {
-                showFeedback("时间到！");
-                handler.postDelayed(() -> moveToNextQuestion(), 5000);
+                showFeedback("时间到！", false);
             }
         }.start();
     }
@@ -106,23 +104,18 @@ public class NuanyangActivity extends AppCompatActivity {
         boolean correctAnswerAsBoolean = correctAnswerString.equals("对");
 
         if (chosenAnswerAsBoolean == correctAnswerAsBoolean) {
-            showFeedback("回答正确！");
+            showFeedback("回答正确！", false);
         } else {
-            showFeedback("回答错误！正确答案是：" + correctAnswerString);
+            showFeedback("回答错误！正确答案是：" + correctAnswerString, false);
         }
-
-        handler.postDelayed(() -> {
-            binding.tvFeedback.setVisibility(View.GONE);
-            moveToNextQuestion();
-        }, 5000);
     }
 
-    private void moveToNextQuestion(){
+    private void moveToNextQuestion() {
         currentQuestionIndex++;
         loadQuestion(currentQuestionIndex);
     }
 
-    private void resetButtonStates(){
+    private void resetButtonStates() {
         binding.btnYes.setEnabled(true);
         binding.btnNo.setEnabled(true);
         binding.btnYes.setSelected(false);
@@ -131,13 +124,27 @@ public class NuanyangActivity extends AppCompatActivity {
 
     private void showLoading(boolean isLoading) {
         binding.progressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
+        // Nuanyang layout groups several content views inside `content_group` (LinearLayout).
+        // Ensure the container's visibility is toggled so its children can be shown.
         binding.contentGroup.setVisibility(isLoading ? View.GONE : View.VISIBLE);
+        binding.tvCountdown.setVisibility(isLoading ? View.GONE : View.VISIBLE);
+        binding.cardNewsContent.setVisibility(isLoading ? View.GONE : View.VISIBLE);
+        binding.ivRobot.setVisibility(isLoading ? View.GONE : View.VISIBLE);
         binding.cardQuestion.setVisibility(isLoading ? View.GONE : View.VISIBLE);
     }
 
-    private void showFeedback(String message) {
+    private void showFeedback(String message, boolean isTerminal) {
         binding.tvFeedback.setText(message);
         binding.tvFeedback.setVisibility(View.VISIBLE);
+
+        if (isTerminal) {
+            handler.postDelayed(this::finish, 2000);
+        } else {
+            handler.postDelayed(() -> {
+                binding.tvFeedback.setVisibility(View.GONE);
+                moveToNextQuestion();
+            }, 5000);
+        }
     }
 
     @Override

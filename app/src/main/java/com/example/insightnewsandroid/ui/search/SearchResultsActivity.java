@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.insightnewsandroid.auth.AuthRepository;
 import com.example.insightnewsandroid.databinding.ActivitySearchResultsBinding;
+import com.example.insightnewsandroid.ui.detail.DetailTopicActivity;
 import com.example.insightnewsandroid.ui.explore.ExploreTopicAdapter;
 
 public class SearchResultsActivity extends AppCompatActivity {
@@ -53,7 +54,14 @@ public class SearchResultsActivity extends AppCompatActivity {
         adapter = new ExploreTopicAdapter();
         binding.rvSearchResults.setLayoutManager(new LinearLayoutManager(this));
         binding.rvSearchResults.setAdapter(adapter);
-        // Add item click listener if needed
+
+        // 添加点击监听器
+        adapter.setOnItemClickListener(newsArticle -> {
+            // 跳转到话题详情页
+            Intent intent = new Intent(SearchResultsActivity.this, DetailTopicActivity.class);
+            intent.putExtra("TOPIC_ID", newsArticle.getId());
+            startActivity(intent);
+        });
     }
 
     private void initObservers() {
@@ -68,7 +76,8 @@ public class SearchResultsActivity extends AppCompatActivity {
                     binding.rvSearchResults.setVisibility(View.GONE);
                 }
             } else {
-                Toast.makeText(this, "搜索失败", Toast.LENGTH_SHORT).show();
+                String errorMsg = apiResponse != null ? apiResponse.getMsg() : "搜索失败";
+                Toast.makeText(this, errorMsg, Toast.LENGTH_SHORT).show();
                 binding.tvNoResults.setVisibility(View.VISIBLE);
                 binding.rvSearchResults.setVisibility(View.GONE);
             }
@@ -89,7 +98,6 @@ public class SearchResultsActivity extends AppCompatActivity {
         });
     }
 
-    // [已修复] 不再跳转，而是在当前页面刷新数据
     private void performNewSearch() {
         String newKeyword = binding.etSearch.getText().toString().trim();
         if (!newKeyword.isEmpty()) {

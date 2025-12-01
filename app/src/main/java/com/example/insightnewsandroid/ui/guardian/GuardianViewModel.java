@@ -9,7 +9,6 @@ import com.example.insightnewsandroid.data.model.QuizQuestion;
 import com.example.insightnewsandroid.data.repository.NewsRepository;
 
 import java.util.List;
-
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;

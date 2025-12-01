@@ -15,46 +15,31 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class ExploreViewModel extends ViewModel {
-    private final NewsRepository newsRepository;
-    private final MutableLiveData<ApiResponse<List<NewsArticle>>> hotTopics = new MutableLiveData<>();
-    private final MutableLiveData<ApiResponse<List<String>>> hotSearchTerms = new MutableLiveData<>();
 
-    public ExploreViewModel() {
-        this.newsRepository = new NewsRepository();
-    }
+    private final NewsRepository newsRepository = new NewsRepository();
+    private final MutableLiveData<ApiResponse<List<NewsArticle>>> hotTopics = new MutableLiveData<>();
 
     public LiveData<ApiResponse<List<NewsArticle>>> getHotTopics() {
         return hotTopics;
-    }
-
-    public LiveData<ApiResponse<List<String>>> getHotSearchTerms() {
-        return hotSearchTerms;
     }
 
     public void fetchHotTopics(String token, String category) {
         newsRepository.getHotTopics(token, category).enqueue(new Callback<ApiResponse<List<NewsArticle>>>() {
             @Override
             public void onResponse(Call<ApiResponse<List<NewsArticle>>> call, Response<ApiResponse<List<NewsArticle>>> response) {
-                hotTopics.setValue(response.body());
+                if (response.isSuccessful() && response.body() != null) {
+                    hotTopics.postValue(response.body());
+                } else {
+                    // Log details for debugging
+                    android.util.Log.w("ExploreViewModel", "getHotTopics failed: code=" + response.code() + " body=" + response.errorBody());
+                    hotTopics.postValue(null);
+                }
             }
 
             @Override
             public void onFailure(Call<ApiResponse<List<NewsArticle>>> call, Throwable t) {
-                hotTopics.setValue(null);
-            }
-        });
-    }
-
-    public void fetchHotSearchTerms(String token) {
-        newsRepository.getHotSearchTerms(token).enqueue(new Callback<ApiResponse<List<String>>>() {
-            @Override
-            public void onResponse(Call<ApiResponse<List<String>>> call, Response<ApiResponse<List<String>>> response) {
-                hotSearchTerms.setValue(response.body());
-            }
-
-            @Override
-            public void onFailure(Call<ApiResponse<List<String>>> call, Throwable t) {
-                hotSearchTerms.setValue(null);
+                android.util.Log.e("ExploreViewModel", "getHotTopics onFailure: " + t.getMessage(), t);
+                hotTopics.postValue(null); // Indicate failure
             }
         });
     }

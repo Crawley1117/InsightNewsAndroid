@@ -48,5 +48,6 @@
     <string name="tab_comments">评论区</string>
     <string name="comment_hint">期待您的评论</string>
     <string name="send_description">发送</string>
+    <string name="send_comment_desc">发送评论</string>
 >>>>>>> a682eaa28bcb3d3cbcb48d9252c5789f3ab28110
 </resources>

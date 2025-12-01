@@ -27,6 +27,7 @@ import com.example.insightnewsandroid.ui.profile.TopicCollectionActivity;
 import com.example.insightnewsandroid.ui.search.SearchActivity;
 
 import java.util.List;
+import android.util.Log;
 
 public class ExploreFragment extends Fragment {
 
@@ -35,7 +36,7 @@ public class ExploreFragment extends Fragment {
     private ExploreTopicAdapter topicAdapter;
     private AuthRepository authRepository;
     private String token;
-    private String currentCategory = "";
+    private String currentCategory = "全部";
 
     @Nullable
     @Override
@@ -53,7 +54,7 @@ public class ExploreFragment extends Fragment {
         viewModel = new ViewModelProvider(this).get(ExploreViewModel.class);
 
         setupViews();
-        setupObservers();
+        setupObservers(); // [已恢复]
         setupCategoryClicks();
 
         loadDataForCategory(currentCategory);
@@ -77,9 +78,9 @@ public class ExploreFragment extends Fragment {
                 Toast.makeText(getContext(), "请先登录以查看收藏", Toast.LENGTH_SHORT).show();
             }
         });
-        
+
         binding.ivSearch.setOnClickListener(v -> startActivity(new Intent(getActivity(), SearchActivity.class)));
-        
+
         binding.ivBingjian.setOnClickListener(v -> startActivity(new Intent(getActivity(), GuardianActivity.class)));
         binding.ivLingxin.setOnClickListener(v -> startActivity(new Intent(getActivity(), LingxinActivity.class)));
         binding.ivNuanyang.setOnClickListener(v -> startActivity(new Intent(getActivity(), NuanyangActivity.class)));
@@ -90,9 +91,28 @@ public class ExploreFragment extends Fragment {
             binding.progressBar.setVisibility(View.GONE);
             if (apiResponse != null && apiResponse.getCode() == 200) {
                 List<NewsArticle> articles = apiResponse.getData();
+                if (articles != null) {
+                    Log.d("ExploreFragment", "hotTopics returned size=" + articles.size());
+                    for (int i = 0; i < Math.min(3, articles.size()); i++) {
+                        Log.d("ExploreFragment", "hotTopic[" + i + "]=" + articles.get(i).getTitle());
+                    }
+                } else {
+                    Log.d("ExploreFragment", "hotTopics returned null data");
+                }
                 topicAdapter.submitList(articles);
             } else {
+                if (apiResponse != null) {
+                    Log.w("ExploreFragment", "getHotTopics apiResponse code=" + apiResponse.getCode() + " msg=" + apiResponse.getMsg());
+                } else {
+                    Log.w("ExploreFragment", "getHotTopics apiResponse is null");
+                }
                 Toast.makeText(getContext(), "加载话题失败", Toast.LENGTH_SHORT).show();
+                String serverMsg = (apiResponse != null) ? apiResponse.getMsg() : null;
+                if (serverMsg != null && !serverMsg.isEmpty()) {
+                    Toast.makeText(getContext(), "加载话题失败: " + serverMsg, Toast.LENGTH_LONG).show();
+                } else {
+                    Toast.makeText(getContext(), "加载话题失败", Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }
@@ -100,13 +120,13 @@ public class ExploreFragment extends Fragment {
     private void setupCategoryClicks() {
         View.OnClickListener categoryClickListener = v -> {
             String category = "";
-            if (v.getId() == R.id.tvAll) category = ""; 
+            if (v.getId() == R.id.tvAll) category = "全部";
             else if (v.getId() == R.id.tvPolitics) category = "政治";
             else if (v.getId() == R.id.tvSociety) category = "社会";
             else if (v.getId() == R.id.tvTech) category = "科技";
             else if (v.getId() == R.id.tvCulture) category = "文化";
             else if (v.getId() == R.id.tvEconomy) category = "经济";
-            
+
             currentCategory = category;
             updateCategorySelectionUI((TextView) v);
             loadDataForCategory(category);
@@ -124,6 +144,9 @@ public class ExploreFragment extends Fragment {
 
     private void loadDataForCategory(String category) {
         binding.progressBar.setVisibility(View.VISIBLE);
+        // Debug: log token and category so we can verify the outgoing request in Logcat
+        Log.d("ExploreFragment", "fetchHotTopics token=" + (token == null ? "<null>" : token) + " category=" + category);
+        // [已恢复] 使用真实网络请求
         viewModel.fetchHotTopics(token, category);
     }
 

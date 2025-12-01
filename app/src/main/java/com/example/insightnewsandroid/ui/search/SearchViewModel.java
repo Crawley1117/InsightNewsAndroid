@@ -17,7 +17,6 @@ public class SearchViewModel extends ViewModel {
     private final MutableLiveData<ApiResponse<List<String>>> hotSearchTerms = new MutableLiveData<>();
     private final MutableLiveData<ApiResponse<List<String>>> searchHistory = new MutableLiveData<>();
     private final MutableLiveData<ApiResponse<Void>> clearHistoryResult = new MutableLiveData<>();
-    // [已修复] 添加缺失的搜索结果LiveData
     private final MutableLiveData<ApiResponse<List<NewsArticle>>> searchResults = new MutableLiveData<>();
 
     public SearchViewModel() {
@@ -36,11 +35,11 @@ public class SearchViewModel extends ViewModel {
         return clearHistoryResult;
     }
 
-    // [已修复] 添加缺失的搜索结果Getter
     public LiveData<ApiResponse<List<NewsArticle>>> getSearchResults() {
         return searchResults;
     }
 
+    // [已修正] 添加token参数
     public void fetchHotSearchTerms(String token) {
         newsRepository.getHotSearchTerms(token).enqueue(new Callback<ApiResponse<List<String>>>() {
             @Override
@@ -83,7 +82,6 @@ public class SearchViewModel extends ViewModel {
         });
     }
 
-    // [已修复] 添加缺失的执行搜索的方法
     public void performSearch(String token, String keyword) {
         newsRepository.searchTopics(token, keyword).enqueue(new Callback<ApiResponse<List<NewsArticle>>>() {
             @Override

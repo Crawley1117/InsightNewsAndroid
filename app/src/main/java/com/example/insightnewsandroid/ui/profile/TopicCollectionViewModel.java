@@ -8,9 +8,7 @@ import com.example.insightnewsandroid.data.model.ApiResponse;
 import com.example.insightnewsandroid.data.model.NewsArticle;
 import com.example.insightnewsandroid.data.repository.NewsRepository;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -34,62 +32,21 @@ public class TopicCollectionViewModel extends ViewModel {
     }
 
     public void fetchFavoriteTopics(String token) {
-        newsRepository.getFavoriteTopics(token).enqueue(new Callback<ApiResponse<List<String>>>() {
+        // [已修复] 将Callback的类型从List<String>修正为List<NewsArticle>
+        newsRepository.getFavoriteTopics(token).enqueue(new Callback<ApiResponse<List<NewsArticle>>>() {
             @Override
-            public void onResponse(Call<ApiResponse<List<String>>> call, Response<ApiResponse<List<String>>> response) {
+            public void onResponse(Call<ApiResponse<List<NewsArticle>>> call, Response<ApiResponse<List<NewsArticle>>> response) {
                 if (response.isSuccessful() && response.body() != null && response.body().getCode() == 200) {
-                    List<String> topicIds = response.body().getData();
-                    if (topicIds != null && !topicIds.isEmpty()) {
-                        fetchDetailsForTopicIds(token, topicIds);
-                    } else {
-                        favoriteTopicsDetails.setValue(new ArrayList<>());
-                    }
+                    favoriteTopicsDetails.setValue(response.body().getData());
                 } else {
                     errorMessage.setValue("获取收藏列表失败");
                 }
             }
 
             @Override
-            public void onFailure(Call<ApiResponse<List<String>>> call, Throwable t) {
+            public void onFailure(Call<ApiResponse<List<NewsArticle>>> call, Throwable t) {
                 errorMessage.setValue("网络请求失败");
             }
         });
-    }
-
-    private void fetchDetailsForTopicIds(String token, List<String> topicIds) {
-        List<NewsArticle> detailsList = new ArrayList<>();
-        AtomicInteger successfulCalls = new AtomicInteger(0);
-
-        for (String id : topicIds) {
-            try {
-                int topicId = Integer.parseInt(id);
-                // [已修复] 调用正确的方法名 getTopicDetails
-                newsRepository.getTopicDetails(token, topicId).enqueue(new Callback<ApiResponse<NewsArticle>>() {
-                    @Override
-                    public void onResponse(Call<ApiResponse<NewsArticle>> call, Response<ApiResponse<NewsArticle>> response) {
-                        if (response.isSuccessful() && response.body() != null && response.body().getCode() == 200) {
-                            NewsArticle article = response.body().getData();
-                            if (article != null) {
-                                detailsList.add(article);
-                            }
-                        }
-                        if (successfulCalls.incrementAndGet() == topicIds.size()) {
-                            favoriteTopicsDetails.setValue(detailsList);
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(Call<ApiResponse<NewsArticle>> call, Throwable t) {
-                        if (successfulCalls.incrementAndGet() == topicIds.size()) {
-                            favoriteTopicsDetails.setValue(detailsList);
-                        }
-                    }
-                });
-            } catch (NumberFormatException e) {
-                if (successfulCalls.incrementAndGet() == topicIds.size()) {
-                    favoriteTopicsDetails.setValue(detailsList);
-                }
-            }
-        }
     }
 }
