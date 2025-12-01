@@ -1,14 +1,17 @@
 package com.example.insightnewsandroid.auth;
 
+import com.example.insightnewsandroid.data.manager.ApiManager;
+import com.example.insightnewsandroid.data.manager.AuthService;
+import com.example.insightnewsandroid.data.model.BaseResponse;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.CountDownTimer;
-import android.view.MenuItem;
+import android.util.Patterns;
+import android.view.View;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import com.example.insightnewsandroid.MainActivity;
 import com.example.insightnewsandroid.data.manager.ApiManager;
-import com.example.insightnewsandroid.data.manager.AuthService;
 import com.example.insightnewsandroid.data.model.BaseResponse;
 import com.example.insightnewsandroid.databinding.ActivityRegisterBinding;
 
@@ -28,28 +31,26 @@ public class RegisterActivity extends AppCompatActivity {
         binding = ActivityRegisterBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setTitle("注册");
-        }
-
         authRepo = new AuthRepository(this);
 
+        // 返回按钮
         binding.toolbar.setNavigationOnClickListener(v -> onBackPressed());
 
+        // 获取验证码按钮
         binding.btnGetCode.setOnClickListener(v -> sendVerificationCode());
 
+        // 注册按钮
         binding.btnRegister.setOnClickListener(v -> register());
     }
 
     private void sendVerificationCode() {
-        String email = binding.editEmail.getText().toString().trim();
-        if (!isValidEmail(email)) {
+        String email = binding.editEmail.getText().toString().trim(); // 修改：变量名从 phone 改为 email
+        if (!isValidEmail(email)) { // 修改：验证方法
             Toast.makeText(this, "请输入有效的邮箱地址", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        Call<BaseResponse<Void>> call = ApiManager.getAuthService().sendVerificationCode(email);
+        Call<BaseResponse<Void>> call = ApiManager.getAuthService().sendVerificationCode(email); // 修改：使用 email 参数
         call.enqueue(new Callback<BaseResponse<Void>>() {
             @Override
             public void onResponse(Call<BaseResponse<Void>> call, Response<BaseResponse<Void>> response) {
@@ -91,11 +92,11 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     private void register() {
-        String email = binding.editEmail.getText().toString().trim();
+        String email = binding.editEmail.getText().toString().trim(); // 修改：变量名从 phone 改为 email
         String code = binding.editCode.getText().toString().trim();
-        String password = binding.editPassword.getText().toString().trim();
+        // 移除：String password = binding.editPassword.getText().toString().trim(); // 不再使用密码
 
-        if (!isValidEmail(email)) {
+        if (!isValidEmail(email)) { // 修改：验证方法
             Toast.makeText(this, "邮箱格式错误", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -103,22 +104,25 @@ public class RegisterActivity extends AppCompatActivity {
             Toast.makeText(this, "请输入验证码", Toast.LENGTH_SHORT).show();
             return;
         }
-        if (password.isEmpty() || password.length() < 6) {
-            Toast.makeText(this, "请输入至少6位密码", Toast.LENGTH_SHORT).show();
-            return;
-        }
+        // 移除：密码长度验证
+        // if (password.isEmpty() || password.length() < 6) {
+        //     Toast.makeText(this, "请输入至少6位密码", Toast.LENGTH_SHORT).show();
+        //     return;
+        // }
 
-        AuthService.RegisterRequest request = new AuthService.RegisterRequest(email, code, password);
-        Call<BaseResponse<String>> call = ApiManager.getAuthService().register(request);
+        // 构建请求体，只包含 email 和 code
+        AuthService.RegisterRequest request = new AuthService.RegisterRequest(email, code); // 修改：构造函数参数
+
+        Call<BaseResponse<String>> call = ApiManager.getAuthService().register(request); // 修改：调用 register 方法
         call.enqueue(new Callback<BaseResponse<String>>() {
             @Override
             public void onResponse(Call<BaseResponse<String>> call, Response<BaseResponse<String>> response) {
                 if (response.isSuccessful()) {
                     BaseResponse<String> baseResponse = response.body();
                     if (baseResponse != null && baseResponse.isSuccess()) {
-                        String token = baseResponse.getData();
+                        String token = baseResponse.getData(); // 从data字段获取token
                         if (token != null && !token.isEmpty()) {
-                            authRepo.setLoggedIn(email, token);
+                            authRepo.setLoggedIn(email, token); // 存储邮箱和Token
                             Toast.makeText(RegisterActivity.this, "注册成功", Toast.LENGTH_SHORT).show();
                             startActivity(new Intent(RegisterActivity.this, MainActivity.class));
                             finish();
@@ -141,17 +145,9 @@ public class RegisterActivity extends AppCompatActivity {
         });
     }
 
+    // 修改：验证邮箱格式
     private boolean isValidEmail(String email) {
-        return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches();
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == android.R.id.home) {
-            onBackPressed();
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
+        return Patterns.EMAIL_ADDRESS.matcher(email).matches();
     }
 
     @Override

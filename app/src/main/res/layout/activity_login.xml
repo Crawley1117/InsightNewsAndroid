@@ -14,21 +14,21 @@
         android:textStyle="bold"
         android:layout_marginBottom="32dp" />
 
-    <!-- 修改：hint 从 "手机号" 改为 "邮箱地址"，inputType 改为 textEmailAddress -->
     <com.google.android.material.textfield.TextInputLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="邮箱地址">
+        android:hint="邮箱地址"> <!-- 修改：提示从手机号改为邮箱 -->
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/editPhone"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:inputType="textEmailAddress" />
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="textEmailAddress" />
 
     </com.google.android.material.textfield.TextInputLayout>
 
-    <RadioGroup
+    <!-- 移除：RadioGroup (验证码/密码切换) -->
+    <!-- <RadioGroup
         android:id="@+id/radioGroup"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -48,36 +48,37 @@
             android:layout_height="wrap_content"
             android:text="密码" />
 
-    </RadioGroup>
+    </RadioGroup> -->
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/layoutCodeOrPassword"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:hint="验证码">
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="16dp"
+    android:hint="验证码">
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/editCodeOrPassword"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+    <com.google.android.material.textfield.TextInputEditText
+        android:id="@+id/editCodeOrPassword"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:inputType="number" />
 
-    </com.google.android.material.textfield.TextInputLayout>
+</com.google.android.material.textfield.TextInputLayout>
 
-    <Button
-        android:id="@+id/btnGetCode"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="end"
-        android:text="获取验证码"
-        android:layout_marginTop="8dp"
-        android:visibility="visible" />
+<Button
+android:id="@+id/btnGetCode"
+android:layout_width="wrap_content"
+android:layout_height="wrap_content"
+android:layout_gravity="end"
+android:text="获取验证码"
+android:layout_marginTop="8dp"
+android:visibility="visible" /> <!-- 修改：始终可见 -->
 
-    <Button
-        android:id="@+id/btnLogin"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
-        android:text="登录" />
+<Button
+android:id="@+id/btnLogin"
+android:layout_width="match_parent"
+android:layout_height="wrap_content"
+android:layout_marginTop="32dp"
+android:text="登录" />
 
-</LinearLayout>
+    </LinearLayout>

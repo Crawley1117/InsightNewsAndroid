@@ -99,9 +99,9 @@ public class ExploreTopicAdapter extends ListAdapter<NewsArticle, ExploreTopicAd
 
                 @Override
                 public boolean areContentsTheSame(@NonNull NewsArticle oldItem, @NonNull NewsArticle newItem) {
-                    // 更可靠的内容比较
-                    return oldItem.getTitle().equals(newItem.getTitle())
-                            && oldItem.getContent().equals(newItem.getContent());
+                    // 安全的内容比较，处理可能为 null 的字段
+                    return java.util.Objects.equals(oldItem.getTitle(), newItem.getTitle())
+                            && java.util.Objects.equals(oldItem.getContent(), newItem.getContent());
                 }
             };
 }

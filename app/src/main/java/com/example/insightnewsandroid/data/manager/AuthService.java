@@ -25,39 +25,64 @@ public interface AuthService {
 
     /**
      * 发送邮箱验证码
-     */
-    @GET("common/code")
-    Call<BaseResponse<Void>> sendVerificationCode(@Query("email") String email);
-
-    /**
-     * 邮箱验证码登录
-     */
-    @POST("user/login")
-    Call<BaseResponse<String>> loginWithCode(@Body AuthService.LoginWithCodeRequest request);
-
-    /**
-     * 邮箱密码登录
-     */
-    @POST("user/login")
-    Call<BaseResponse<String>> loginWithPassword(@Body AuthService.LoginWithPasswordRequest request);
-
-    /**
-     * 邮箱验证码注册
-     */
-    @POST("user/register")
-    Call<BaseResponse<String>> register(@Body AuthService.RegisterRequest request);
-
-    // --- 新增：新闻检测相关接口 ---
-
-    /**
-     * 上传文本进行检测
+     * 根据 Apifox: POST
      */
     @Headers({
             "User-Agent: Apifox/1.0.0 (https://apifox.com)",
             "Accept: */*",
             "Connection: keep-alive"
     })
-    @POST("detection/upload/text")
+    @POST("common/code") // 修正：方法为 POST
+    Call<BaseResponse<Void>> sendVerificationCode(@Query("email") String email); // 参数使用 @Query
+
+    /**
+     * 邮箱验证码登录
+     * 根据 Apifox: (无直接信息，但通常为 POST)
+     */
+    @Headers({
+            "User-Agent: Apifox/1.0.0 (https://apifox.com)",
+            "Accept: */*",
+            "Connection: keep-alive"
+    })
+    @POST("user/login") // 保持 POST
+    Call<BaseResponse<String>> loginWithCode(@Body AuthService.LoginWithCodeRequest request);
+
+    /**
+     * 邮箱密码登录
+     * 根据 Apifox: (无直接信息，但通常为 POST)
+     */
+    @Headers({
+            "User-Agent: Apifox/1.0.0 (https://apifox.com)",
+            "Accept: */*",
+            "Connection: keep-alive"
+    })
+    @POST("user/login") // 保持 POST
+    Call<BaseResponse<String>> loginWithPassword(@Body AuthService.LoginWithPasswordRequest request);
+
+    /**
+     * 邮箱验证码注册
+     * 根据 Apifox: POST, Body: {email, code}
+     */
+    @Headers({
+            "User-Agent: Apifox/1.0.0 (https://apifox.com)",
+            "Accept: */*",
+            "Connection: keep-alive"
+    })
+    @POST("user/register") // 保持 POST
+    Call<BaseResponse<String>> register(@Body AuthService.RegisterRequest request); // 注意：参数为 RegisterRequest
+
+    // --- 新增：新闻检测相关接口 (需要特殊 header) ---
+
+    /**
+     * 上传文本进行检测
+     * 根据 Apifox: POST
+     */
+    @Headers({
+            "User-Agent: Apifox/1.0.0 (https://apifox.com)",
+            "Accept: */*",
+            "Connection: keep-alive"
+    })
+    @POST("detection/upload/text") // 保持 POST
     Call<BaseResponse<UploadTextResponse>> uploadTextDetection(
             @Header("Authorization") String token, // 传递 Authorization Header
             @Body AuthService.UploadTextRequest request // 传递请求体
@@ -65,6 +90,7 @@ public interface AuthService {
 
     /**
      * 上传图片进行检测
+     * 根据 Apifox: POST
      */
     @Headers({
             "User-Agent: Apifox/1.0.0 (https://apifox.com)",
@@ -72,7 +98,7 @@ public interface AuthService {
             "Connection: keep-alive"
     })
     @Multipart
-    @POST("detection/upload/file") // 假设后端不需要 filePath 查询参数，直接接收文件
+    @POST("detection/upload/file") // 保持 POST
     Call<BaseResponse<UploadTextResponse>> uploadImageDetection( // 假设返回格式与文本相同
                                                                  @Header("Authorization") String token, // 传递 Authorization Header
                                                                  @Part MultipartBody.Part file // 传递文件
@@ -80,14 +106,15 @@ public interface AuthService {
     );
 
     /**
-     * 上传文本和图片进行一致性检测
+     * 上传文本和图片做一致性检测
+     * 根据 Apifox: POST
      */
     @Headers({
             "User-Agent: Apifox/1.0.0 (https://apifox.com)",
             "Accept: */*",
             "Connection: keep-alive"
     })
-    @POST("detection/upload/multimodal")
+    @POST("detection/upload/multimodal") // 保持 POST
     Call<BaseResponse<UploadTextResponse>> uploadMultimodalDetection( // 假设返回格式与文本/图片上传相同
                                                                       @Header("Authorization") String token, // 传递 Authorization Header
                                                                       @Body AuthService.MultimodalDetectionRequest request // 传递请求体
@@ -95,58 +122,80 @@ public interface AuthService {
 
     /**
      * 查看检测历史
+     * 根据 Apifox: GET
      */
     @Headers({
             "User-Agent: Apifox/1.0.0 (https://apifox.com)",
             "Accept: */*",
             "Connection: keep-alive"
     })
-    @GET("detection/history")
+    @GET("detection/history") // 修正：方法为 GET
     Call<BaseResponse<List<DetectionHistoryItem>>> getDetectionHistory(
             @Header("Authorization") String token
     );
 
     /**
      * 查看分析报告
+     * 根据 Apifox: GET
      */
     @Headers({
             "User-Agent: Apifox/1.0.0 (https://apifox.com)",
             "Accept: */*",
             "Connection: keep-alive"
     })
-    @GET("detection/report/{id}") // 使用 Path 注解获取 id
+    @GET("detection/report/{id}") // 修正：方法为 GET
     Call<BaseResponse<AnalysisReport>> getAnalysisReport(
             @Header("Authorization") String token, // 传递 Authorization Header
             @Path("id") String reportId // 传递报告 ID
     );
-    // --- 新增结束 ---
 
     /**
-     * 下载分析报告 (后端未准备好，暂时不调用)
+     * 下载分析报告
+     * 根据 Apifox: GET
      */
+    @Headers({
+            "User-Agent: Apifox/1.0.0 (https://apifox.com)",
+            "Accept: */*",
+            "Connection: keep-alive"
+    })
     @Streaming // 添加 Streaming 注解以处理大文件下载
-    @GET("detection/report/download/{id}") // 使用 Path 注解获取 id
+    @GET("detection/report/download/{id}") // 修正：方法为 GET
     Call<ResponseBody> downloadAnalysisReport(
             @Header("Authorization") String token, // 传递 Authorization Header (如果需要)
             @Path("id") String reportId, // 传递报告 ID
             @Query("format") String format // 传递下载格式，例如 "pdf", "docx", "txt"
     );
-    // --- 新增结束 ---
 
-    // --- 新增：获取话题列表接口 ---
     /**
-     * 获取话题列表
+     * 收藏新闻检测结果
+     * 根据 Apifox: POST
      */
     @Headers({
             "User-Agent: Apifox/1.0.0 (https://apifox.com)",
             "Accept: */*",
             "Connection: keep-alive"
     })
-    @GET("topic") // 注意：URL 中包含 'category' 查询参数
-    Call<BaseResponse<List<TopicItem>>> getTopics( // 假设 TopicItem 是话题列表项的模型
-                                                   @Header("Authorization") String token, // 传递 Authorization Header
-                                                   @Query("category") String category // 传递 category 查询参数
+    @POST("detection/favorite") // 假设路径是 /detection/favorite，你需要根据实际后端路径调整
+    Call<BaseResponse<Void>> collectDetectionResult(
+            @Header("Authorization") String token, // 传递 Authorization Header
+            @Body AuthService.CollectRequest request // 假设有一个 CollectRequest 模型
     );
+
+    /**
+     * 点踩新闻检测结果
+     * 根据 Apifox: POST
+     */
+    @Headers({
+            "User-Agent: Apifox/1.0.0 (https://apifox.com)",
+            "Accept: */*",
+            "Connection: keep-alive"
+    })
+    @POST("detection/dislike") // 假设路径是 /detection/dislike，你需要根据实际后端路径调整
+    Call<BaseResponse<Void>> dislikeDetectionResult(
+            @Header("Authorization") String token, // 传递 Authorization Header
+            @Body AuthService.DislikeRequest request // 假设有一个 DislikeRequest 模型
+    );
+
     // --- 新增结束 ---
 
     // --- 检测请求体模型 (文本) ---
@@ -220,16 +269,16 @@ public interface AuthService {
         public void setPassword(String password) { this.password = password; }
     }
 
-    // 注册请求体模型
+    // 注册请求体模型 (修改：移除 password 字段)
     class RegisterRequest {
         private String email;
         private String code;
-        private String password;
+        // private String password; // 移除 password 字段
 
-        public RegisterRequest(String email, String code, String password) {
+        public RegisterRequest(String email, String code) { // 修改：构造函数参数
             this.email = email;
             this.code = code;
-            this.password = password;
+            // this.password = password; // 移除 password 赋值
         }
 
         // Getters and Setters
@@ -237,9 +286,34 @@ public interface AuthService {
         public void setEmail(String email) { this.email = email; }
         public String getCode() { return code; }
         public void setCode(String code) { this.code = code; }
-        public String getPassword() { return password; }
-        public void setPassword(String password) { this.password = password; }
+        // public String getPassword() { return password; } // 移除 getter
+        // public void setPassword(String password) { this.password = password; } // 移除 setter
     }
+    // --- 注册请求体模型 (修改) ---
+
+    // --- 新增：收藏和点踩请求体模型 ---
+    class CollectRequest {
+        private String id; // 检测结果ID
+
+        public CollectRequest(String id) {
+            this.id = id;
+        }
+
+        public String getId() { return id; }
+        public void setId(String id) { this.id = id; }
+    }
+
+    class DislikeRequest {
+        private String id; // 检测结果ID
+
+        public DislikeRequest(String id) {
+            this.id = id;
+        }
+
+        public String getId() { return id; }
+        public void setId(String id) { this.id = id; }
+    }
+    // --- 新增结束 ---
 
     // --- 话题列表项模型 (需要根据后端实际返回结构定义) ---
     class TopicItem {
