@@ -70,7 +70,26 @@ public class CredibilityViewModel extends AndroidViewModel {
         chatMessages.setValue(current); // 更新UI显示加载状态
 
         // 调用后端接口
-        callUploadTextDetection(text, current); // 传递当前消息列表以更新
+        if (imageUrl != null && text != null) {
+            // 如果同时有文本和图片，则调用多模态检测
+            callUploadMultimodalDetection(text, imageUrl, current);
+        } else if (imageUrl != null) {
+            // 如果只有图片，则调用图片检测
+            callUploadImageDetection(imageUrl, current);
+        } else if (text != null) {
+            // 如果只有文本，则调用文本检测
+            callUploadTextDetection(text, current);
+        } else {
+            // 如果都没有，则显示错误或提示
+            List<ChatMessage> updatedMessages = new ArrayList<>(current);
+            if (!updatedMessages.isEmpty() && updatedMessages.get(updatedMessages.size() - 1).getType() == ChatMessage.Type.AI
+                    && "正在分析...".equals(updatedMessages.get(updatedMessages.size() - 1).getText())) {
+                updatedMessages.remove(updatedMessages.size() - 1);
+            }
+            ChatMessage errorMsg = new ChatMessage(ChatMessage.Type.AI, "无法分析，缺少文本或图片内容。");
+            updatedMessages.add(errorMsg);
+            chatMessages.setValue(updatedMessages);
+        }
         // --- 修改结束 ---
     }
 
@@ -185,23 +204,6 @@ public class CredibilityViewModel extends AndroidViewModel {
     // --- 新增结束 ---
 
     // --- 新增：调用上传图片接口的方法 ---
-    public void addUserMessageWithImage(String imagePath) { // 接收图片路径
-        List<ChatMessage> currentValue = chatMessages.getValue();
-        List<ChatMessage> current = new ArrayList<>(currentValue != null ? currentValue : new ArrayList<>());
-
-        ChatMessage userMsg = new ChatMessage(ChatMessage.Type.USER, "发送了一张图片");
-        userMsg.setImageUrl(imagePath); // 设置图片路径
-        current.add(userMsg);
-
-        // 添加一个临时的 "正在分析..." 消息
-        ChatMessage aiMsg = new ChatMessage(ChatMessage.Type.AI, "正在分析...");
-        current.add(aiMsg);
-        chatMessages.setValue(current); // 更新UI显示加载状态
-
-        // 调用后端接口
-        callUploadImageDetection(imagePath, current); // 传递当前消息列表以更新
-    }
-
     private void callUploadImageDetection(String imagePath, List<ChatMessage> currentMessages) {
         // 1. 获取 Token
         String token = authRepo.getAuthToken();
@@ -270,6 +272,146 @@ public class CredibilityViewModel extends AndroidViewModel {
                         // 模拟一个结果用于保存
                         CredibilityResult resultToSave = new CredibilityResult(50, "图片检测已提交，结果待定。"); // 示例：默认50分，原因待定
                         saveDetectionRecord("图片内容: " + imagePath, resultToSave); // 保存到本地数据库
+                        // --- 保存结束 ---
+
+                    } else {
+                        String msg = (baseResponse != null) ? baseResponse.getMsg() : "未知错误";
+                        Log.e("CredibilityViewModel", "Upload failed. Server message: " + msg);
+                        errorMessage.setValue("检测失败: " + msg);
+
+                        // 从消息列表中移除 "正在分析..." 消息
+                        List<ChatMessage> updatedMessages = new ArrayList<>(currentMessages);
+                        if (!updatedMessages.isEmpty() && updatedMessages.get(updatedMessages.size() - 1).getType() == ChatMessage.Type.AI
+                                && "正在分析...".equals(updatedMessages.get(updatedMessages.size() - 1).getText())) {
+                            updatedMessages.remove(updatedMessages.size() - 1);
+                        }
+                        ChatMessage errorMsg = new ChatMessage(ChatMessage.Type.AI, "检测失败: " + msg);
+                        updatedMessages.add(errorMsg);
+                        chatMessages.setValue(updatedMessages);
+                    }
+                } else {
+                    Log.e("CredibilityViewModel", "Upload failed. HTTP code: " + response.code());
+                    errorMessage.setValue("网络请求失败: " + response.code());
+
+                    // 从消息列表中移除 "正在分析..." 消息
+                    List<ChatMessage> updatedMessages = new ArrayList<>(currentMessages);
+                    if (!updatedMessages.isEmpty() && updatedMessages.get(updatedMessages.size() - 1).getType() == ChatMessage.Type.AI
+                            && "正在分析...".equals(updatedMessages.get(updatedMessages.size() - 1).getText())) {
+                        updatedMessages.remove(updatedMessages.size() - 1);
+                    }
+                    ChatMessage errorMsg = new ChatMessage(ChatMessage.Type.AI, "网络请求失败: " + response.code());
+                    updatedMessages.add(errorMsg);
+                    chatMessages.setValue(updatedMessages);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<BaseResponse<UploadTextResponse>> call, Throwable t) {
+                Log.e("CredibilityViewModel", "Upload failed due to network error.", t);
+                errorMessage.setValue("网络错误: " + t.getMessage());
+
+                // 从消息列表中移除 "正在分析..." 消息
+                List<ChatMessage> updatedMessages = new ArrayList<>(currentMessages);
+                if (!updatedMessages.isEmpty() && updatedMessages.get(updatedMessages.size() - 1).getType() == ChatMessage.Type.AI
+                        && "正在分析...".equals(updatedMessages.get(updatedMessages.size() - 1).getText())) {
+                    updatedMessages.remove(updatedMessages.size() - 1);
+                }
+                ChatMessage errorMsg = new ChatMessage(ChatMessage.Type.AI, "网络错误: " + t.getMessage());
+                updatedMessages.add(errorMsg);
+                chatMessages.setValue(updatedMessages);
+            }
+        });
+    }
+    // --- 新增结束 ---
+
+    // --- 新增：公共方法，供 Fragment 调用 (图片) ---
+    public void addUserMessageWithImage(String imagePath) {
+        List<ChatMessage> currentValue = chatMessages.getValue();
+        List<ChatMessage> current = new ArrayList<>(currentValue != null ? currentValue : new ArrayList<>());
+
+        ChatMessage userMsg = new ChatMessage(ChatMessage.Type.USER, "发送了一张图片");
+        userMsg.setImageUrl(imagePath); // 设置图片路径
+        current.add(userMsg);
+
+        // 添加一个临时的 "正在分析..." 消息
+        ChatMessage aiMsg = new ChatMessage(ChatMessage.Type.AI, "正在分析...");
+        current.add(aiMsg);
+        chatMessages.setValue(current); // 更新UI显示加载状态
+
+        // 调用私有的网络请求方法
+        callUploadImageDetection(imagePath, current); // 传递当前消息列表以更新
+    }
+    // --- 新增结束 ---
+
+    // --- 新增：调用多模态检测接口的方法 ---
+    public void addUserMessageWithTextAndImage(String text, String imageUrl) { // 接收文本和图片URL
+        List<ChatMessage> currentValue = chatMessages.getValue();
+        List<ChatMessage> current = new ArrayList<>(currentValue != null ? currentValue : new ArrayList<>());
+
+        ChatMessage userMsg = new ChatMessage(ChatMessage.Type.USER, text);
+        userMsg.setImageUrl(imageUrl); // 设置图片URL
+        current.add(userMsg);
+
+        // 添加一个临时的 "正在分析..." 消息
+        ChatMessage aiMsg = new ChatMessage(ChatMessage.Type.AI, "正在分析...");
+        current.add(aiMsg);
+        chatMessages.setValue(current); // 更新UI显示加载状态
+
+        // 调用后端接口
+        callUploadMultimodalDetection(text, imageUrl, current); // 传递当前消息列表以更新
+    }
+
+    private void callUploadMultimodalDetection(String text, String imageUrl, List<ChatMessage> currentMessages) {
+        // 1. 获取 Token
+        String token = authRepo.getAuthToken();
+        if (token == null || token.isEmpty()) {
+            Log.e("CredibilityViewModel", "Token is null or empty, cannot upload multimodal data.");
+            errorMessage.setValue("用户未登录或Token无效");
+            // 从消息列表中移除 "正在分析..." 消息
+            List<ChatMessage> updatedMessages = new ArrayList<>(currentMessages);
+            if (!updatedMessages.isEmpty() && updatedMessages.get(updatedMessages.size() - 1).getType() == ChatMessage.Type.AI
+                    && "正在分析...".equals(updatedMessages.get(updatedMessages.size() - 1).getText())) {
+                updatedMessages.remove(updatedMessages.size() - 1);
+            }
+            ChatMessage errorMsg = new ChatMessage(ChatMessage.Type.AI, "无法获取用户信息，请重新登录。");
+            updatedMessages.add(errorMsg);
+            chatMessages.setValue(updatedMessages);
+            return;
+        }
+
+        // 2. 构建请求体
+        AuthService.MultimodalDetectionRequest request = new AuthService.MultimodalDetectionRequest(text, imageUrl);
+
+        // 3. 发起网络请求
+        Call<BaseResponse<UploadTextResponse>> call = ApiManager.getAuthService().uploadMultimodalDetection("Bearer " + token, request);
+        call.enqueue(new Callback<BaseResponse<UploadTextResponse>>() {
+            @Override
+            public void onResponse(Call<BaseResponse<UploadTextResponse>> call, Response<BaseResponse<UploadTextResponse>> response) {
+                // 在主线程执行
+                if (response.isSuccessful()) {
+                    BaseResponse<UploadTextResponse> baseResponse = response.body();
+                    if (baseResponse != null && baseResponse.isSuccess()) {
+                        // 上传成功，但后端目前返回空对象 {}
+                        Log.d("CredibilityViewModel", "Multimodal data uploaded successfully. Response: " + baseResponse.getData());
+
+                        // 从消息列表中移除 "正在分析..." 消息
+                        List<ChatMessage> updatedMessages = new ArrayList<>(currentMessages);
+                        if (!updatedMessages.isEmpty() && updatedMessages.get(updatedMessages.size() - 1).getType() == ChatMessage.Type.AI
+                                && "正在分析...".equals(updatedMessages.get(updatedMessages.size() - 1).getText())) {
+                            updatedMessages.remove(updatedMessages.size() - 1);
+                        }
+
+                        // TODO: 这里需要根据后端实际返回的检测结果创建 CredibilityResult
+                        // 目前由于后端返回为空，我们只能模拟一个结果或显示一个提示
+                        ChatMessage aiMsg = new ChatMessage(ChatMessage.Type.AI, "文本和图片已提交一致性检测，请稍后查看结果。");
+                        updatedMessages.add(aiMsg);
+
+                        chatMessages.setValue(updatedMessages);
+
+                        // --- 保存到历史记录 (示例：保存文本和图片路径和模拟结果) ---
+                        // 模拟一个结果用于保存
+                        CredibilityResult resultToSave = new CredibilityResult(50, "多模态检测已提交，结果待定。"); // 示例：默认50分，原因待定
+                        saveDetectionRecord("文本: " + text + " 图片: " + imageUrl, resultToSave); // 保存到本地数据库
                         // --- 保存结束 ---
 
                     } else {
